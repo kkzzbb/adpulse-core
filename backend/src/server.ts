@@ -1,5 +1,5 @@
 import express from "express";
-import type { Campaign } from "./domain/campaign.js";
+import type { Campaign, CreateCampaignInput, } from "./domain/campaign.js";
 
 const app = express();
 
@@ -40,6 +40,36 @@ app.get("/api/campaigns/:id", (req, res) => {
     return res.status(404).json({ error: "Campaign not found" });
   }
   res.json(campaign);
+});
+
+app.post("/api/campaigns", (req, res) => {
+  const input = req.body as CreateCampaignInput;
+
+  if (!input.name || input.name.trim() === "") {
+	return res.status(400).json({
+		error: "Campaign name is required",
+	});
+  }
+  if (
+	typeof input.budget !== "number" ||
+	input.budget <= 0
+  ) {
+	return res.status(400).json({
+		error: "Budget must be a greater than zero",
+	});
+  }
+
+  const campaign: Campaign = {
+	id: `campaign-${campaigns.length + 1}`,
+	name: input.name.trim(),
+	budget: input.budget,
+	spent: 0,
+	status: "DRAFT",
+  };
+
+  campaigns.push(campaign);
+
+  return res.status(201).json(campaign);
 });
 
 app.listen(PORT, () => {

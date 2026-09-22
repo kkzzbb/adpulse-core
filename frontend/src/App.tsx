@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getCampaigns } from './api/campaigns.ts';
 import type { Campaign } from './types/campaign.ts';
+import { CreateCampaignForm } from "./components/CreateCampaignForm";
 
 function App() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -39,6 +40,15 @@ function App() {
       
       <p>Advertising campaign management and analytics platform</p>
 
+      <CreateCampaignForm
+        onCampaignCreated={(campaign) => {
+          setCampaigns((currentCampaigns) => [
+            ...currentCampaigns,
+            campaign,
+          ]);
+        }}
+      />
+
       <h2>Campaigns</h2>
 
       {campaigns.map((campaign) => (
@@ -46,8 +56,8 @@ function App() {
           <h3>{campaign.name}</h3>
 
           <p>Status: {campaign.status}</p>
-          <p>Budget: ${campaign.budget}</p>
-          <p>Spent: ${campaign.spent}</p>
+          <p>Budget: €{campaign.budget}</p>
+          <p>Spent: €{campaign.spent}</p>
           
         </article>
       ))}
