@@ -1,4 +1,4 @@
-import type { Campaign } from "../domain/campaign.js";
+import type { Campaign, CampaignStatus } from "../domain/campaign.js";
 
 export interface CampaignRepository {
 	findAll(): Promise<Campaign[]>;
@@ -6,6 +6,8 @@ export interface CampaignRepository {
 	findById(id: string): Promise<Campaign | null>;
 
 	save(campaign: Campaign): Promise<Campaign>;
+
+	updateStatus(id: string, status: CampaignStatus): Promise<Campaign | null>;
 }
 
 export class InMemoryCampaignRepository implements CampaignRepository
@@ -46,4 +48,28 @@ export class InMemoryCampaignRepository implements CampaignRepository
 
 		return { ...campaign, };
 	}
+
+	async updateStatus(id: string, status: CampaignStatus): Promise<Campaign | null> {
+		const index = this.campaigns.findIndex(
+			(campaign) => campaign.id === id
+		);
+		
+		if (index === -1) {
+			return null;
+		}
+
+		const currentCampaign = this.campaigns[index];
+
+		if (!currentCampaign) {
+			return null;
+		}
+
+		const updatedCampaign: Campaign = {
+			...currentCampaign, status
+		};
+
+		this.campaigns[index] = updatedCampaign;
+
+		return { ...updatedCampaign };
+	};
 }

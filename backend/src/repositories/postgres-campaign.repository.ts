@@ -77,4 +77,26 @@ export class PostgresCampaignRepository implements CampaignRepository {
 
 		return mapCampaignRow(row);
 	}
+
+	async updateStatus(id: string, status: CampaignStatus): Promise<Campaign | null> {
+		const result = await this.pool.query<CampaignRow>(
+			`
+			UPDATE campaigns
+			SET status = $2, updated_at = NOW()
+			WHERE id = $1
+			RETURNING	id,	name,	budget,	spent, status`,
+				[
+					id,
+					status,
+				]
+		);
+
+		const row = result.rows[0];
+
+		if (!row) {
+			return null;
+		}
+
+		return mapCampaignRow(row);
+	}
 }
