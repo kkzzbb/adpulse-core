@@ -1,7 +1,17 @@
 import { app } from "./app.js";
+import { env } from "./config/env.js";
+import { pool } from "./db/pool.js";
 
-const PORT = 3000;
+async function startServer() {
+	await pool.query("SELECT 1");
 
-app.listen(PORT, () => {
-	console.log(`AdPulse API listening on http://localhost:${PORT}`);
+	app.listen(env.PORT, () => {
+		console.log(`AdPulse API listening on http://localhost:${env.PORT}`,);
+	});
+}
+
+startServer().catch((error) => {
+	console.error("Failed to start AdPulse", error);
+
+	process.exit(1);
 });
