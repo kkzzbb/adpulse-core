@@ -72,4 +72,32 @@ export class CampaignService {
 
 		return updatedCampaign;
 	}
+
+	async updateCampaignBudget(id: string, newBudget: number): Promise<Campaign> {
+		const campaign = await this.campaignRepository.findById(id);
+
+		if (!campaign) {
+			throw new AppError("Campaign not found", 404);
+		}
+
+		if (campaign.status === "COMPLETED") {
+			throw new AppError("Completed campaigns cannot be modified", 409);
+		}
+
+		if (newBudget < campaign.spent) {
+			throw new AppError(`Budget cannot be lower than already spent amount (${campaign.spent})`, 409);
+		}
+
+		if (newBudget === campaign.budget) {
+			return campaign;
+		}
+
+		const updatedCampaign = await this.campaignRepository.updateBudget(id, newBudget);
+
+		if (!updatedCampaign) {
+			throw new AppError("Campaign not found", 404);
+		}
+
+		return updatedCampaign;
+	}
 }

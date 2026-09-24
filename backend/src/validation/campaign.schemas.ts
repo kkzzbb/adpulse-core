@@ -1,5 +1,7 @@
 import { z } from "zod";
-import type { CreateCampaignInput, UpdateCampaignStatusInput } from "../domain/campaign.js";
+import type { CreateCampaignInput, UpdateCampaignStatusInput,
+	UpdateCampaignBudgetInput,
+ } from "../domain/campaign.js";
 
 export const createCampaignSchema: z.ZodType<CreateCampaignInput> =
 	z.object({
@@ -17,4 +19,10 @@ export const updateCampaignStatusSchema:
 			"PAUSED",
 			"COMPLETED",
 		]),
+	}).strict();
+
+export const updateCampaignBudgetSchema:
+	z.ZodType<UpdateCampaignBudgetInput> =
+	z.object({
+		budget: z.number().positive("Budget must be greater than zero"),
 	}).strict();

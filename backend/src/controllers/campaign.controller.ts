@@ -1,6 +1,8 @@
 import type { NextFunction, Request, Response, } from "express";
 import type { CampaignService } from "../services/campaign.service.js";
-import type { CreateCampaignInput, UpdateCampaignStatusInput } from "../domain/campaign.js";
+import type { CreateCampaignInput, UpdateCampaignStatusInput,
+	UpdateCampaignBudgetInput
+ } from "../domain/campaign.js";
 
 export class CampaignController {
 	constructor(
@@ -51,6 +53,22 @@ export class CampaignController {
 				req.params.id, req.body.status
 			);
 			
+			return res.json(campaign);
+		} catch (error) {
+			next(error);
+		}
+	};
+
+	updateCampaignBudget = async (
+		req: Request<{id: string}, unknown, UpdateCampaignBudgetInput>,
+		res: Response,
+		next: NextFunction
+	) => {
+		try {
+			const campaign = await this.campaignService.updateCampaignBudget(
+				req.params.id, req.body.budget
+			);
+
 			return res.json(campaign);
 		} catch (error) {
 			next(error);

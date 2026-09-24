@@ -8,6 +8,8 @@ export interface CampaignRepository {
 	save(campaign: Campaign): Promise<Campaign>;
 
 	updateStatus(id: string, status: CampaignStatus): Promise<Campaign | null>;
+
+	updateBudget(id: string, budget: number): Promise<Campaign | null>;
 }
 
 export class InMemoryCampaignRepository implements CampaignRepository
@@ -71,5 +73,29 @@ export class InMemoryCampaignRepository implements CampaignRepository
 		this.campaigns[index] = updatedCampaign;
 
 		return { ...updatedCampaign };
-	};
+	}
+
+	async updateBudget(id: string, budget: number): Promise<Campaign | null> {
+		const index = this.campaigns.findIndex(
+			(campaign) => campaign.id === id
+		);
+
+		if (index === -1) {
+			return null;
+		}
+
+		const currentCampaign = this.campaigns[index];
+
+		if (!currentCampaign) {
+			return null;
+		}
+
+		const updatedCampaign: Campaign = {
+			...currentCampaign, budget
+		};
+
+		this.campaigns[index] = updatedCampaign;
+
+		return { ...updatedCampaign };
+	}
 }

@@ -1,7 +1,9 @@
 import { Router } from "express";
 import type { CampaignController } from "../controllers/campaign.controller.js";
 import { validateBody } from "../middleware/validate.js";
-import { createCampaignSchema,  updateCampaignStatusSchema } from "../validation/campaign.schemas.js";
+import { createCampaignSchema,  updateCampaignStatusSchema,
+	updateCampaignBudgetSchema
+ } from "../validation/campaign.schemas.js";
 
 export function createCampaignRouter(campaignController: CampaignController) {
 	const router = Router();
@@ -14,6 +16,9 @@ export function createCampaignRouter(campaignController: CampaignController) {
 
 	router.patch("/:id/status", validateBody(updateCampaignStatusSchema),
 		campaignController.updateCampaignStatus);
-		
+
+	router.patch("/:id/budget", validateBody(updateCampaignBudgetSchema),
+		campaignController.updateCampaignBudget);
+			
 	return router;
 }
