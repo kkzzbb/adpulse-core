@@ -31,6 +31,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
 		const result = await this.pool.query<CampaignRow>(`
 			SELECT id, name, budget, spent, status
 			FROM campaigns
+			WHERE archived_at IS NULL
 			ORDER BY created_at DESC`);
 	
 		return result.rows.map(mapCampaignRow);
@@ -38,10 +39,11 @@ export class PostgresCampaignRepository implements CampaignRepository {
 
 
 	async findById(id: string): Promise<Campaign | null> {
-		const result = await this.pool.query<CampaignRow>(`
+		const result = await this.pool.query<CampaignRow>(
+			`
 			SELECT id, name, budget, spent, status
 			FROM campaigns
-			WHERE id = $1`,
+			WHERE id = $1 AND archived_at IS NULL`,
 			[id],
 		);
 
@@ -83,7 +85,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
 			`
 			UPDATE campaigns
 			SET status = $2, updated_at = NOW()
-			WHERE id = $1
+			WHERE id = $1 AND archived_at IS NULL
 			RETURNING	id,	name,	budget,	spent, status`,
 				[
 					id,
@@ -105,7 +107,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
 			`
 			UPDATE campaigns
 			SET budget = $2, updated_at = NOW()
-			Where id = $1
+			WHERE id = $1 AND archived_at IS NULL
 			RETURNING id, name, budget, spent, status`,
 			[
 				id,
@@ -120,5 +122,40 @@ export class PostgresCampaignRepository implements CampaignRepository {
 		}
 
 		return mapCampaignRow(row);
+	}
+
+	async updateName(id: string, name: string): Promise<Campaign | null> {
+		const result = await this.pool.query<CampaignRow>(
+			`
+			UPDATE campaigns
+			SET name = $2, updated_at = NOW()
+			WHERE id = $1 AND archived_at IS NULL
+			RETURNING id, name, budget, spent, status`,
+			[
+				id,
+				name,
+			]
+		);
+
+		const row = result.rows[0];
+
+		if(!row) {
+			return null;
+		}
+
+		return mapCampaignRow(row);
+	}
+
+	async archive(id: string): Promise<boolean> {
+		const result = await this.pool.query(
+			`
+			UPDATE campaigns
+			SET archived_at = NOW(), updated_at = NOW()
+			WHERE id = $1 AND archived_at IS NULL
+			RETURNING id`,
+			[id]
+		);
+		
+		return result.rowCount === 1;
 	}
 }

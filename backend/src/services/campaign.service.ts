@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
-import type {Campaign, CreateCampaignInput, CampaignStatus } from "../domain/campaign.js";
+import type {Campaign, CreateCampaignInput, CampaignStatus,
+	UpdateCampaignInput
+ } from "../domain/campaign.js";
 import { AppError } from "../errors/app-error.js";
 import type { CampaignRepository } from "../repositories/campaign.repository.js";
 
@@ -99,5 +101,47 @@ export class CampaignService {
 		}
 
 		return updatedCampaign;
+	}
+
+	async updateCampaign(id: string, input: UpdateCampaignInput): Promise<Campaign> {
+		const campaign = await this.campaignRepository.findById(id);
+
+		if (!campaign) {
+			throw new AppError("Campaign not found", 404);
+		}
+
+		if (campaign.status === "COMPLETED") {
+			throw new AppError("Completed campaigns cannot be modified", 409);
+		}
+
+		if (campaign.name === input.name) {
+			return campaign;
+		}
+
+		const updatedCampaign = await this.campaignRepository.updateName(id, input.name);
+
+		if(!updatedCampaign) {
+			throw new AppError("Campaign not found", 404);
+		}
+
+		return updatedCampaign;
+	}
+
+	async archiveCampaign(id: string): Promise<void> {
+		const campaign = await this.campaignRepository.findById(id);
+
+		if (!campaign) {
+			throw new AppError("Campaign not found", 404);
+		}
+
+		if (campaign.status === "ACTIVE") {
+			throw new AppError("Active campaigns must be paused or completed before archiving", 409);
+		}
+
+		const archived = await this.campaignRepository.archive(id);
+
+		if (!archived) {
+			throw new AppError("Campaign not found", 404);
+		}
 	}
 }

@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response, } from "express";
 import type { CampaignService } from "../services/campaign.service.js";
 import type { CreateCampaignInput, UpdateCampaignStatusInput,
-	UpdateCampaignBudgetInput
+	UpdateCampaignBudgetInput, UpdateCampaignInput,
  } from "../domain/campaign.js";
 
 export class CampaignController {
@@ -70,6 +70,36 @@ export class CampaignController {
 			);
 
 			return res.json(campaign);
+		} catch (error) {
+			next(error);
+		}
+	};
+
+	updateCampaign = async (
+		req: Request<{id: string}, unknown, UpdateCampaignInput>,
+		res: Response,
+		next: NextFunction
+	) => {
+		try {
+			const campaign = await this.campaignService.updateCampaign(
+				req.params.id, req.body
+			);
+
+			return res.json(campaign);
+		} catch (error) {
+			next(error);
+		}
+	};
+
+	archiveCampaign = async (
+		req: Request<{id: string}>,
+		res: Response,
+		next: NextFunction
+	) => {
+		try {
+			await this.campaignService.archiveCampaign(req.params.id);
+
+			return res.status(204).send();
 		} catch (error) {
 			next(error);
 		}

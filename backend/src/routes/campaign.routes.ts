@@ -2,7 +2,7 @@ import { Router } from "express";
 import type { CampaignController } from "../controllers/campaign.controller.js";
 import { validateBody } from "../middleware/validate.js";
 import { createCampaignSchema,  updateCampaignStatusSchema,
-	updateCampaignBudgetSchema
+	updateCampaignBudgetSchema, updateCampaignSchema,
  } from "../validation/campaign.schemas.js";
 
 export function createCampaignRouter(campaignController: CampaignController) {
@@ -19,6 +19,11 @@ export function createCampaignRouter(campaignController: CampaignController) {
 
 	router.patch("/:id/budget", validateBody(updateCampaignBudgetSchema),
 		campaignController.updateCampaignBudget);
-			
+
+	router.patch("/:id", validateBody(updateCampaignSchema),
+		campaignController.updateCampaign);
+	
+	router.delete("/:id", campaignController.archiveCampaign);
+	
 	return router;
 }

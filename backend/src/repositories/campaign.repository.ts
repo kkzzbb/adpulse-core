@@ -7,9 +7,13 @@ export interface CampaignRepository {
 
 	save(campaign: Campaign): Promise<Campaign>;
 
+	updateName(id: string, name: string): Promise<Campaign | null>;
+
 	updateStatus(id: string, status: CampaignStatus): Promise<Campaign | null>;
 
 	updateBudget(id: string, budget: number): Promise<Campaign | null>;
+
+	archive(id: string): Promise<boolean>;
 }
 
 export class InMemoryCampaignRepository implements CampaignRepository
@@ -31,13 +35,19 @@ export class InMemoryCampaignRepository implements CampaignRepository
     },
 	];
 
+	private readonly archivedIds = new Set<string>();
+
 	async findAll(): Promise<Campaign[]> {
-		return this.campaigns.map(
-			(campaign) => ({ ...campaign}),
-		);
+		return this.campaigns.filter(
+			(campaign) => !this.archivedIds.has(campaign.id)
+		).map((campaign) => ({ ...campaign }));
 	}
 
 	async findById(id: string): Promise<Campaign | null> {
+		if (this.archivedIds.has(id)) {
+			return null;
+		}
+
 		const campaign = this.campaigns.find(
 			(campaign) => campaign.id === id,
 		);
@@ -97,5 +107,47 @@ export class InMemoryCampaignRepository implements CampaignRepository
 		this.campaigns[index] = updatedCampaign;
 
 		return { ...updatedCampaign };
+	}
+
+	async updateName(id: string, name: string): Promise<Campaign | null> {
+		if (this.archivedIds.has(id)) {
+			return null;
+		}
+
+		const index = this.campaigns.findIndex(
+			(campaign) => campaign.id === id
+		);
+
+		if (index === -1) {
+			return null;
+		}
+
+		const currentCampaign = this.campaigns[index];
+
+		if (!currentCampaign) {
+			return null;
+		}
+
+		const updatedCampaign: Campaign = {
+			...currentCampaign, name
+		};
+
+		this.campaigns[index] = updatedCampaign;
+
+		return { ...updatedCampaign };
+	}
+
+	async archive(id: string): Promise<boolean> {
+		const campaign = this.campaigns.find(
+			(campaign) => campaign.id === id
+		);
+
+		if (!campaign || this.archivedIds.has(id)) {
+			return false;
+		}
+
+		this.archivedIds.add(id);
+
+		return true;
 	}
 }
