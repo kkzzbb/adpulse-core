@@ -1,0 +1,15 @@
+ALTER TABLE campaigns
+ADD COLUMN user_id UUID;
+
+UPDATE campaigns
+SET user_id = '00000000-0000-4000-8000-000000000001'
+WHERE user_id IS NULL;
+
+ALTER TABLE campaigns
+ALTER COLUMN user_id SET NOT NULL;
+
+ALTER TABLE campaigns
+ADD CONSTRAINT campaigns_user_id_fkey
+FOREIGN KEY (user_id)
+REFERENCES users(id)
+ON DELETE RESTRICT;
