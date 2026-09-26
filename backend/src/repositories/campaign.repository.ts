@@ -16,11 +16,14 @@ export interface CampaignRepository {
 	archive(id: string): Promise<boolean>;
 }
 
+const DEVELOPMENT_USER_ID = "00000000-0000-4000-8000-000000000001";
+
 export class InMemoryCampaignRepository implements CampaignRepository
 {
 	private campaigns: Campaign[] = [
 		{
 			id: "campaign-1",
+			userId: DEVELOPMENT_USER_ID,
       name: "Summer Sale",
       budget: 5000,
       spent: 1250,
@@ -28,6 +31,7 @@ export class InMemoryCampaignRepository implements CampaignRepository
 		},
 		{
       id: "campaign-2",
+      userId: DEVELOPMENT_USER_ID,
       name: "Autumn Launch",
       budget: 8000,
       spent: 0,

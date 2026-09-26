@@ -5,7 +5,7 @@ import type { CampaignRepository } from "./campaign.repository.js";
 interface CampaignRow extends QueryResultRow {
 	id: string;
 	name: string;
-
+	user_id: string;
 	budget: string;
 	spent: string;
 
@@ -16,10 +16,9 @@ function mapCampaignRow(row: CampaignRow): Campaign {
 	return {
 		id: row.id,
 		name: row.name,
-		
+		userId: row.user_id,
 		budget: Number(row.budget),
 		spent: Number(row.spent),
-
 		status: row.status,
 	};
 }
@@ -29,7 +28,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
 
 	async findAll(): Promise<Campaign[]> {
 		const result = await this.pool.query<CampaignRow>(`
-			SELECT id, name, budget, spent, status
+			SELECT id, user_id, name, budget, spent, status
 			FROM campaigns
 			WHERE archived_at IS NULL
 			ORDER BY created_at DESC`);
@@ -41,7 +40,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
 	async findById(id: string): Promise<Campaign | null> {
 		const result = await this.pool.query<CampaignRow>(
 			`
-			SELECT id, name, budget, spent, status
+			SELECT id, user_id, name, budget, spent, status
 			FROM campaigns
 			WHERE id = $1 AND archived_at IS NULL`,
 			[id],
@@ -59,11 +58,12 @@ export class PostgresCampaignRepository implements CampaignRepository {
 	async save(campaign: Campaign): Promise<Campaign> {
 		const result = await this.pool.query<CampaignRow>(
 			`
-			INSERT INTO campaigns (id, name, budget, spent, status)
-			VALUES ($1, $2, $3, $4, $5)
-			RETURNING id, name, budget, spent, status`,
+			INSERT INTO campaigns (id, user_id, name, budget, spent, status)
+			VALUES ($1, $2, $3, $4, $5, $6)
+			RETURNING id, user_id, name, budget, spent, status`,
 			[
 				campaign.id,
+				campaign.userId,
 				campaign.name,
 				campaign.budget,
 				campaign.spent,
@@ -86,7 +86,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
 			UPDATE campaigns
 			SET status = $2, updated_at = NOW()
 			WHERE id = $1 AND archived_at IS NULL
-			RETURNING	id,	name,	budget,	spent, status`,
+			RETURNING	id, user_id, name,	budget,	spent, status`,
 				[
 					id,
 					status,
@@ -108,7 +108,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
 			UPDATE campaigns
 			SET budget = $2, updated_at = NOW()
 			WHERE id = $1 AND archived_at IS NULL
-			RETURNING id, name, budget, spent, status`,
+			RETURNING id, user_id, name, budget, spent, status`,
 			[
 				id,
 				budget,
@@ -130,7 +130,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
 			UPDATE campaigns
 			SET name = $2, updated_at = NOW()
 			WHERE id = $1 AND archived_at IS NULL
-			RETURNING id, name, budget, spent, status`,
+			RETURNING id, user_id, name, budget, spent, status`,
 			[
 				id,
 				name,

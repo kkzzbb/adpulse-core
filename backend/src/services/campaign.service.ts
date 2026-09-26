@@ -15,6 +15,7 @@ const allowedStatusTransitions: Record<CampaignStatus, CampaignStatus[]> = {
 export class CampaignService {
 	constructor(
 		private readonly campaignRepository: CampaignRepository,
+		private readonly defaultUserId: string,
 	) {}
 
 	async getCampaigns(): Promise<Campaign[]> {
@@ -37,6 +38,7 @@ export class CampaignService {
 	async createCampaign(input: CreateCampaignInput): Promise<Campaign> {
 		const campaign: Campaign = {
 			id: randomUUID(),
+			userId: this.defaultUserId,
 			name: input.name,
 			budget: input.budget,
 			spent: 0,

@@ -6,6 +6,7 @@ export type CampaignStatus =
 
 export interface Campaign {
   id: string;
+  userId: string;
   name: string;
   budget: number;
   spent: number;

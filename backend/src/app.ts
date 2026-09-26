@@ -6,6 +6,7 @@ import { createCampaignRouter } from "./routes/campaign.routes.js";
 import { CampaignService } from "./services/campaign.service.js";
 import { pool } from "./db/pool.js";
 import { PostgresCampaignRepository } from "./repositories/postgres-campaign.repository.js";
+import { env } from "./config/env.js";
 
 export const app = express();
 
@@ -13,8 +14,7 @@ app.use(express.json());
 
 const campaignRepository = new PostgresCampaignRepository(pool);
 
-const campaignService = new CampaignService(campaignRepository);
-
+const campaignService = new CampaignService(campaignRepository, env.DEFAULT_USER_ID);
 const campaignController = new CampaignController(campaignService);
 
 app.get("/health", (_req, res) => {
