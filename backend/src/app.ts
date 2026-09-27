@@ -7,15 +7,22 @@ import { CampaignService } from "./services/campaign.service.js";
 import { pool } from "./db/pool.js";
 import { PostgresCampaignRepository } from "./repositories/postgres-campaign.repository.js";
 import { env } from "./config/env.js";
+import { CreativeController } from "./controllers/creative.controller.js";
+import { PostgresCreativeRepository } from "./repositories/postgres-creative.repository.js";
+import { CreativeService } from "./services/creative.service.js";
 
 export const app = express();
 
 app.use(express.json());
 
 const campaignRepository = new PostgresCampaignRepository(pool);
+const creativeRepository = new PostgresCreativeRepository(pool);
 
 const campaignService = new CampaignService(campaignRepository, env.DEFAULT_USER_ID);
+const creativeService = new CreativeService(campaignRepository, creativeRepository);
+
 const campaignController = new CampaignController(campaignService);
+const creativeController = new CreativeController(creativeService);
 
 app.get("/health", (_req, res) => {
 	res.json({
@@ -25,7 +32,7 @@ app.get("/health", (_req, res) => {
 
 app.use(
 	"/api/campaigns",
-	createCampaignRouter(campaignController)
+	createCampaignRouter(campaignController, creativeController)
 );
 
 app.use(

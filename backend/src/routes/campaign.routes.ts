@@ -4,8 +4,11 @@ import { validateBody } from "../middleware/validate.js";
 import { createCampaignSchema,  updateCampaignStatusSchema,
 	updateCampaignBudgetSchema, updateCampaignSchema,
  } from "../validation/campaign.schemas.js";
+import { CreativeController } from "../controllers/creative.controller.js";
+import { createCreativeRouter } from "./creative.routes.js";
 
-export function createCampaignRouter(campaignController: CampaignController) {
+export function createCampaignRouter(
+	campaignController: CampaignController, creativeController: CreativeController) {
 	const router = Router();
 
 	router.get("/", campaignController.getCampaigns);
@@ -24,6 +27,8 @@ export function createCampaignRouter(campaignController: CampaignController) {
 		campaignController.updateCampaign);
 	
 	router.delete("/:id", campaignController.archiveCampaign);
+
+	router.use("/:campaignId/creatives", createCreativeRouter(creativeController));
 	
 	return router;
 }
