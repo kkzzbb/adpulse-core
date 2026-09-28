@@ -1,4 +1,5 @@
-import type { Pool, QueryResultRow } from "pg";
+import type { QueryResultRow } from "pg";
+import type { Queryable } from "../db/queryable.js";
 import type { Creative } from "../domain/creative.js";
 import type { CreativeRepository } from "./creative.repository.js";
 
@@ -21,10 +22,10 @@ function mapCreativeRow(row: CreativeRow): Creative {
 }
 
 export class PostgresCreativeRepository implements CreativeRepository {
-	constructor( private readonly pool: Pool ) {}
+	constructor( private readonly db: Queryable ) {}
 
 	async findByCampaignId(campaignId: string): Promise<Creative[]> {
-		const result = await this.pool.query<CreativeRow>(
+		const result = await this.db.query<CreativeRow>(
 			`
 			SELECT id, campaign_id, headline, body, destination_url
 			FROM creatives
@@ -37,7 +38,7 @@ export class PostgresCreativeRepository implements CreativeRepository {
 	}
 
 	async save(creative: Creative): Promise<Creative> {
-		const result = await this.pool.query<CreativeRow>(
+		const result = await this.db.query<CreativeRow>(
 			`
 			INSERT INTO creatives (id, campaign_id, headline, body, destination_url)
 			VALUES ($1, $2, $3, $4, $5)

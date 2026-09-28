@@ -1,4 +1,5 @@
-import type { Pool, QueryResultRow } from "pg";
+import type { QueryResultRow } from "pg";
+import type { Queryable } from "../db/queryable.js";
 import type { Campaign, CampaignStatus } from "../domain/campaign.js";
 import type { CampaignRepository } from "./campaign.repository.js";
 
@@ -24,10 +25,10 @@ function mapCampaignRow(row: CampaignRow): Campaign {
 }
 
 export class PostgresCampaignRepository implements CampaignRepository {
-	constructor(private readonly pool: Pool) {}
+	constructor(private readonly db: Queryable) {}
 
 	async findAll(): Promise<Campaign[]> {
-		const result = await this.pool.query<CampaignRow>(`
+		const result = await this.db.query<CampaignRow>(`
 			SELECT id, user_id, name, budget, spent, status
 			FROM campaigns
 			WHERE archived_at IS NULL
@@ -38,7 +39,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
 
 
 	async findById(id: string): Promise<Campaign | null> {
-		const result = await this.pool.query<CampaignRow>(
+		const result = await this.db.query<CampaignRow>(
 			`
 			SELECT id, user_id, name, budget, spent, status
 			FROM campaigns
@@ -56,7 +57,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
 	}
 
 	async save(campaign: Campaign): Promise<Campaign> {
-		const result = await this.pool.query<CampaignRow>(
+		const result = await this.db.query<CampaignRow>(
 			`
 			INSERT INTO campaigns (id, user_id, name, budget, spent, status)
 			VALUES ($1, $2, $3, $4, $5, $6)
@@ -81,7 +82,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
 	}
 
 	async updateStatus(id: string, status: CampaignStatus): Promise<Campaign | null> {
-		const result = await this.pool.query<CampaignRow>(
+		const result = await this.db.query<CampaignRow>(
 			`
 			UPDATE campaigns
 			SET status = $2, updated_at = NOW()
@@ -103,7 +104,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
 	}
 
 	async updateBudget(id: string, budget: number): Promise<Campaign | null> {
-		const result = await this.pool.query<CampaignRow>(
+		const result = await this.db.query<CampaignRow>(
 			`
 			UPDATE campaigns
 			SET budget = $2, updated_at = NOW()
@@ -125,7 +126,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
 	}
 
 	async updateName(id: string, name: string): Promise<Campaign | null> {
-		const result = await this.pool.query<CampaignRow>(
+		const result = await this.db.query<CampaignRow>(
 			`
 			UPDATE campaigns
 			SET name = $2, updated_at = NOW()
@@ -147,7 +148,7 @@ export class PostgresCampaignRepository implements CampaignRepository {
 	}
 
 	async archive(id: string): Promise<boolean> {
-		const result = await this.pool.query(
+		const result = await this.db.query(
 			`
 			UPDATE campaigns
 			SET archived_at = NOW(), updated_at = NOW()
