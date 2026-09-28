@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response, } from "express";
 import type { CampaignService } from "../services/campaign.service.js";
 import type { CreateCampaignInput, UpdateCampaignStatusInput,
 	UpdateCampaignBudgetInput, UpdateCampaignInput,
+	CreateCampaignWithCreativeInput,
  } from "../domain/campaign.js";
 
 export class CampaignController {
@@ -100,6 +101,20 @@ export class CampaignController {
 			await this.campaignService.archiveCampaign(req.params.id);
 
 			return res.status(204).send();
+		} catch (error) {
+			next(error);
+		}
+	};
+
+	createCampaignWithCreative = async (
+		req: Request<Record<string, never>, unknown, CreateCampaignWithCreativeInput>,
+		res: Response,		
+		next: NextFunction
+	) => {
+		try {
+			const result = await this.campaignService.createCampaignWithCreative(req.body);
+			
+			return res.status(201).json(result);
 		} catch (error) {
 			next(error);
 		}

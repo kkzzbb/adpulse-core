@@ -2,7 +2,7 @@ import { Router } from "express";
 import type { CampaignController } from "../controllers/campaign.controller.js";
 import { validateBody } from "../middleware/validate.js";
 import { createCampaignSchema,  updateCampaignStatusSchema,
-	updateCampaignBudgetSchema, updateCampaignSchema,
+	updateCampaignBudgetSchema, updateCampaignSchema, createCampaignWithCreativeSchema
  } from "../validation/campaign.schemas.js";
 import { CreativeController } from "../controllers/creative.controller.js";
 import { createCreativeRouter } from "./creative.routes.js";
@@ -30,5 +30,8 @@ export function createCampaignRouter(
 
 	router.use("/:campaignId/creatives", createCreativeRouter(creativeController));
 	
+	router.post("/with-initial-creative", validateBody(createCampaignWithCreativeSchema),
+		campaignController.createCampaignWithCreative);
+
 	return router;
 }

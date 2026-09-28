@@ -1,9 +1,11 @@
 import { randomUUID } from "node:crypto";
 import type {Campaign, CreateCampaignInput, CampaignStatus,
-	UpdateCampaignInput
+	UpdateCampaignInput, CreateCampaignWithCreativeInput
  } from "../domain/campaign.js";
 import { AppError } from "../errors/app-error.js";
 import type { CampaignRepository } from "../repositories/campaign.repository.js";
+import type { TransactionManager } from "../transactions/transaction-manager.js";
+import { Creative } from "../domain/creative.js";
 
 const allowedStatusTransitions: Record<CampaignStatus, CampaignStatus[]> = {
 	DRAFT: [ "ACTIVE" ],
@@ -16,6 +18,7 @@ export class CampaignService {
 	constructor(
 		private readonly campaignRepository: CampaignRepository,
 		private readonly defaultUserId: string,
+		private readonly transactionManager: TransactionManager
 	) {}
 
 	async getCampaigns(): Promise<Campaign[]> {
@@ -145,5 +148,34 @@ export class CampaignService {
 		if (!archived) {
 			throw new AppError("Campaign not found", 404);
 		}
+	}
+
+async createCampaignWithCreative(input: CreateCampaignWithCreativeInput){
+	return this.transactionManager.run(async ({
+		campaignRepository, creativeRepository
+		}) => {
+			const campaign: Campaign = {
+				id: randomUUID(),
+				userId: this.defaultUserId,
+				name: input.name,
+				budget: input.budget,
+				spent: 0,
+				status: "DRAFT",
+			};
+		
+			const savedCampaign = await campaignRepository.save(campaign);
+			
+			const creative: Creative = {
+				id: randomUUID(),
+				campaignId: savedCampaign.id,
+				headline: input.creative.headline,
+				body: input.creative.body,
+				destinationUrl: input.creative.destinationUrl
+			};
+
+			const savedCreative = await creativeRepository.save(creative);
+
+			return { campaign: savedCampaign, creative: savedCreative };
+		});
 	}
 }

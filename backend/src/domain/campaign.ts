@@ -1,3 +1,5 @@
+import type { CreateCreativeInput } from "./creative.js";
+
 export type CampaignStatus =
   | "DRAFT"
   | "ACTIVE"
@@ -28,4 +30,10 @@ export interface UpdateCampaignStatusInput {
 
 export interface UpdateCampaignBudgetInput {
   budget: number;
+}
+
+export interface CreateCampaignWithCreativeInput {
+  name: string;
+  budget: number;
+  creative: CreateCreativeInput;
 }
