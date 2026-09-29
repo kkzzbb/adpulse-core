@@ -36,3 +36,15 @@ export async function createCampaign(
 
   return campaign;
 }
+
+export async function getCampaignById(id: string): Promise<Campaign> {
+  const response = await fetch(`/api/campaigns/${id}`);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch campaign: ${response.status}`);
+  }
+
+  const campaign: Campaign = await response.json();
+
+  return campaign;
+}
