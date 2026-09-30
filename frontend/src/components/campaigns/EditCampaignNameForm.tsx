@@ -20,7 +20,7 @@ export function EditCampaignNameForm({
 		setName(campaign.name);
 	}, [campaign.name]);
 
-	async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+	async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
 				event.preventDefault();
 
 				const trimmedName = name.trim();

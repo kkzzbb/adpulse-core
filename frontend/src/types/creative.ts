@@ -5,3 +5,9 @@ export interface Creative {
 	body: string;
 	destinationUrl: string;
 }
+
+export interface CreateCreativeInput {
+	headline: string;
+	body: string;
+	destinationUrl: string;
+}

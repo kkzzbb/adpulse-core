@@ -8,6 +8,8 @@ import { ArchiveCampaignButton } from "../components/campaigns/ArchivedCampaignB
 import { CampaignBudgetForm } from "../components/campaigns/CampaignBudgetForm";
 import { CampaignStatusControls } from "../components/campaigns/CampaignStatusControls";
 import { EditCampaignNameForm } from "../components/campaigns/EditCampaignNameForm";
+import { CreateCreativeForm } from "../components/campaigns/CreateCreativeForm";
+import { CreativeCard } from "../components/campaigns/CreativeCard";
 
 export function CampaignDetailPage() {
 	const navigate = useNavigate();
@@ -23,6 +25,10 @@ export function CampaignDetailPage() {
 
 	function handleArchived() {
 		navigate("/");
+	}
+
+	function handleCreativeCreated(creative: Creative) {
+		setCreatives((currentCreatives) => [...currentCreatives, creative]);
 	}
 
 	useEffect(() => {
@@ -129,23 +135,18 @@ export function CampaignDetailPage() {
 			
 			<h2>Creatives</h2>
 
-			{creatives.length === 0 ? (
-				<p>No creatives yet.</p>
+			{campaign.status === "DRAFT" ? (
+				<CreateCreativeForm campaignId={campaign.id} onCreativeCreated={handleCreativeCreated}/>
 			) : (
+				<p>New creatives can only be added while the campign is in Draft status.</p>
+			)}
+
+			{creatives.length === 0 ? (
+    		<p>No creatives yet.</p>) : (
 				creatives.map((creative) => (
-					<article key={creative.id}>
-
-						<h3>{creative.headline}</h3>
-
-						<p>{creative.body}</p>
-
-						<a 
-						href={creative.destinationUrl}
-						target="_blank"
-						rel="noreferrer"
-						>
-						Destination</a>
-					</article>
+					<CreativeCard
+						key={creative.id}
+						creative={creative}/>
 				)
 			)
 		)}

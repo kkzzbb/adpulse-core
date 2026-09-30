@@ -1,4 +1,5 @@
-import type { Creative } from "../types/creative";
+import type { Creative, CreateCreativeInput } from "../types/creative";
+import { readErrorMessage } from "./http";
 
 export async function getCampaignCreatives(campaignId: string): Promise<Creative[]> {
 	const response = await fetch(`/api/campaigns/${campaignId}/creatives`);
@@ -10,4 +11,22 @@ export async function getCampaignCreatives(campaignId: string): Promise<Creative
 	const creatives: Creative[] = await response.json();
 
 	return creatives;
+}
+
+export async function createCreative(campaignId: string, input:CreateCreativeInput): Promise<Creative> {
+	const response = await fetch(`/api/campaigns/${campaignId}/creatives`,
+		{
+			method: "POST",
+			headers: {"Content-Type":"application/json"},
+			body: JSON.stringify(input)
+		}
+	);
+
+	if (!response.ok) {
+		throw new Error(await readErrorMessage(response, "Failed to create creative"));
+	}
+
+	const creative: Creative = await response.json();
+
+	return creative;
 }
