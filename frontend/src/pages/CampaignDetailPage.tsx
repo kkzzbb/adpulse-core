@@ -10,6 +10,8 @@ import { CampaignStatusControls } from "../components/campaigns/CampaignStatusCo
 import { EditCampaignNameForm } from "../components/campaigns/EditCampaignNameForm";
 import { CreateCreativeForm } from "../components/campaigns/CreateCreativeForm";
 import { CreativeCard } from "../components/campaigns/CreativeCard";
+import { StatusBadge } from "../components/campaigns/StatusBadge";
+import { formatCurrency } from "../utils/format";
 
 export function CampaignDetailPage() {
 	const navigate = useNavigate();
@@ -76,16 +78,26 @@ export function CampaignDetailPage() {
 	}, [campaignId]);
 
 	if (loading) {
-		return <p>Loading campaign details...</p>;
+		return (
+			<div className="page-state">
+				<p>Loading campaign details...</p>
+			</div>
+		);
 	}
 
 	if (error) {
 		return (
-			<section>
-				<p>Error: {error}</p>
+			<div className="page-state page-state--error"role="alert">
+				<strong>
+					Could not load campaign
+				</strong>
 
-				<Link to="/">Back to Campaigns</Link>
-			</section>
+				<p>{error}</p>
+
+				<Link className="text-link"to="/">
+					← Back to campaigns
+				</Link>
+			</div>
 		);
 	}
 
@@ -96,60 +108,123 @@ export function CampaignDetailPage() {
 	}
 
 	return (
-		<section>
-			<Link to ="/">
+		<div className="page-stack">
+			<Link className="text-link"to ="/">
 				 ← Back to campaigns
 			</Link>
 
-			<h1>{campaign.name}</h1>
+			<header className="campaign-hero">
+				<div>
+					<p className="eyebrow">
+						Campaign
+					</p>
+					
+					<h1>{campaign.name}</h1>
 
-			<p>Status: {campaign.status}</p>
-			<p>Budget: €{campaign.budget}</p>
-			<p>Spent: €{campaign.spent}</p>
+					<StatusBadge status={campaign.status}/>
+				</div>
 
-			{campaign.status === "COMPLETED" && (<p>
-				This campaign is completed. Campaign metadata and budget are now read-only.
-			</p>)}
+				<div className="metric-grid">
+					<div className="metric-card">
+						<span className="metric-label">
+							Budget
+						</span>
 
-			<EditCampaignNameForm
-				campaign={campaign}
-				disabled={campaign.status === "COMPLETED"}
-				onCampaignUpdated={handleCampaignUpdated}
-			/>
+						<strong>
+							{formatCurrency(campaign.budget)}
+						</strong>
+					</div>
 
-			<CampaignBudgetForm
-				campaign={campaign}
-				disabled={campaign.status === "COMPLETED"}
-				onCampaignUpdated={handleCampaignUpdated}
-			/>
+					<div className="metric-card">
+						<span className="metric-label">
+							Spent
+						</span>
 
-			<CampaignStatusControls
-				campaign={campaign}
-				onCampaignUpdated={handleCampaignUpdated}
-			/>
+						<strong>
+							{formatCurrency(campaign.spent)}
+						</strong>
+					</div>
 
-			<ArchiveCampaignButton
-				campaign={campaign}
-				onArchived={handleArchived}
-			/>
-			
-			<h2>Creatives</h2>
+					<div className="metric-card">
+						<span className="metric-label">
+							Remaining
+						</span>
 
-			{campaign.status === "DRAFT" ? (
-				<CreateCreativeForm campaignId={campaign.id} onCreativeCreated={handleCreativeCreated}/>
-			) : (
-				<p>New creatives can only be added while the campign is in Draft status.</p>
-			)}
+						<strong>
+							{formatCurrency(campaign.budget - campaign.spent)}
+						</strong>
+					</div>
+				</div>
+			</header>	
 
-			{creatives.length === 0 ? (
-    		<p>No creatives yet.</p>) : (
-				creatives.map((creative) => (
-					<CreativeCard
-						key={creative.id}
-						creative={creative}/>
-				)
-			)
-		)}
-		</section>
+			{campaign.status === "COMPLETED" && (
+				<div className="notice">
+					This campaign is completed. Campaign metadata and budget are now read-only.
+				</div>
+				)}
+
+				<div className="action-grid">
+					<EditCampaignNameForm
+						campaign={campaign}
+						disabled={campaign.status === "COMPLETED"}
+						onCampaignUpdated={handleCampaignUpdated}
+					/>
+
+					<CampaignBudgetForm
+						campaign={campaign}
+						disabled={campaign.status === "COMPLETED"}
+						onCampaignUpdated={handleCampaignUpdated}
+					/>
+
+					<CampaignStatusControls
+						campaign={campaign}
+						onCampaignUpdated={handleCampaignUpdated}
+					/>
+
+					<ArchiveCampaignButton
+						campaign={campaign}
+						onArchived={handleArchived}
+					/>
+				</div>
+
+				<section className="panel">
+					<div className="section-heading">
+						<h2>Creatives</h2>
+
+						<span className="item-count">
+							{creatives.length}{" "}
+							creatives
+						</span>
+					</div>
+
+					{campaign.status === "DRAFT" ? (
+						<CreateCreativeForm campaignId={campaign.id} onCreativeCreated={handleCreativeCreated}/>
+					) : (
+						<div className="notice">
+							New creatives can only be added while the campign is in Draft status.
+						</div>
+					)}
+
+					{creatives.length === 0 ? (
+						<div className="empty-state">
+							<strong>
+								No creatives yet
+							</strong>
+							
+							<p>
+								Add the first creative while this campaign is still in Draft
+							</p>
+						</div>) : (
+						<div className="creative-grid">	
+							{creatives.map((creative) => (
+								<CreativeCard
+									key={creative.id}
+									creative={creative}/>
+							)
+						)}
+						</div>
+				)}
+			</section>
+		</div>	
 	);
 }

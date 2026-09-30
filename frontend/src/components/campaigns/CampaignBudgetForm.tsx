@@ -74,7 +74,7 @@ export function CampaignBudgetForm({
 				{submitting ? "Saving..." : "Update budget"}
 			</button>
 
-			{error &&(<p>{error}</p>)}
+			{error && (<p className="form-error"role="alert">{error}</p>)}
 		</form>
 	);
 }

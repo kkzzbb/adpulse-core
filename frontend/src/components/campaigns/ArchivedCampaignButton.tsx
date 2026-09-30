@@ -50,6 +50,7 @@ export function ArchiveCampaignButton({campaign, onArchived}: ArchiveCampaignBut
 					before they can be archived.</p>)}
 			
 			<button
+				className="button button--danger"
 				type="button"
 				disabled={archiveBlocked || submitting}
 				onClick={handleArchive}
@@ -57,7 +58,7 @@ export function ArchiveCampaignButton({campaign, onArchived}: ArchiveCampaignBut
 				{submitting? "Archiving..." : "Archive campaign"}
 			</button>
 
-			{error && (<p>{error}</p>)}
+			{error && (<p className="form-error"role="alert">{error}</p>)}
 		</section>
 	);
 }

@@ -46,23 +46,63 @@ export function CampaignListPage() {
 	}
 
 	return (
-		<section>
-			<h1>Campaigns</h1>
+		<div className="page-stack">
+			<header className="page-heading">
+				<div>
+					<p className="eyebrow">
+						Campaign workspace
+					</p>
+		
+					<h1>Campaigns</h1>
 
-			<CreateCampaignForm onCampaignCreated={handleCampaignCreated} />
+					<p className="page-description">
+						Create campaigns, manage budgets, and control campaign delivery.
+					</p>
+				</div>
+			</header>
 
-			<h2>Your campaigns</h2>
+			<section className="panel">
+				<CreateCampaignForm onCampaignCreated={handleCampaignCreated} />
+			</section>
 
-			{loading && (<p>Loading campaigns...</p>)}
+			<section>
+				<div className="section-heading">
+					<h2>Your campaigns</h2>
 
-			{error && (<p>Error: {error}</p>)}
+					{!loading && !error && (<span className="item-count">
+						{campaigns.length}{" "}campaigns
+					</span>)}
+				</div>
+
+			{loading && (<div className="page-state">
+				<p>Loading campaigns...</p>
+				</div>)}
+
+			{error && (<div className="page-state page-state--error"role="alert">
+				<strong>
+					Could not load campaigns
+				</strong>
+				
+				<p>Error: {error}</p>
+			</div>)}
 
 			{!loading && !error && campaigns.length === 0 && (
-				<p>No campaigns yet.</p>)}
+				<div className="page-state">
+					<strong>
+						No campaigns yet
+					</strong>
+					
+					<p> Create your first campaign above.</p>
+				</div>)}
 
-			{!loading && !error && campaigns.map((campaign) => (
+			{!loading && !error && campaigns.length > 0 && (
+				<div className="campaign-grid">
+					{campaigns.map((campaign) => (
 				<CampaignCard key={campaign.id} campaign={campaign} />
-			))}	
+				))}
+				</div>
+			)}
 		</section>
+		</div>
 		);
 }

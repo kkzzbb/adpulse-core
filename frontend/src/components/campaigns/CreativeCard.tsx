@@ -6,19 +6,28 @@ interface CreativeCardProps {
 
 export function CreativeCard({creative}: CreativeCardProps) {
 	return (
-		<article>
-			<h3>
-				{creative.headline}
-			</h3>
+		<article className="creative-card">
+			<div>
+				<span className="creative-card__label">
+					Creative
+				</span>
+			
+				<h3>
+					{creative.headline}
+				</h3>
+			</div>
 
 			<p>
 				{creative.body}
 			</p>
 
-			<a href={creative.destinationUrl}
-			target="_blank"
-			rel="noreferrer">
-				Visit destination
+			<a 
+				className="text-link"
+				href={creative.destinationUrl}
+				target="_blank"
+				rel="noreferrer"
+			>
+				Visit destination ↗
 			</a>
 		</article>
 	);

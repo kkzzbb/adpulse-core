@@ -77,7 +77,7 @@ export function CampaignStatusControls({campaign, onCampaignUpdated}: CampaignSt
 					))
 				)}
 
-				{error && (<p>{error}</p>)}
+				{error && (<p className="form-error"role="alert">{error}</p>)}
 		</section>
 	);
 }

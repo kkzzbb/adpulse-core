@@ -110,7 +110,7 @@ export function CreateCreativeForm({campaignId, onCreativeCreated}: CreateCreati
 					{submitting? "Creating..." : "Add creative"}
 				</button>
 
-				{error && (<p>{error}</p>)}
+				{error && (<p className="form-error"role="alert">{error}</p>)}
 			</form>
 	);
 }

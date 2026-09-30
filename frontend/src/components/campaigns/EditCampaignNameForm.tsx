@@ -72,7 +72,7 @@ export function EditCampaignNameForm({
 						{submitting ? "Saving..." : "Save name"}
 					</button>
 
-					{error && (<p>{error}</p>)}
+					{error && (<p className="form-error"role="alert">{error}</p>)}
 				</form>
 			);
 }
