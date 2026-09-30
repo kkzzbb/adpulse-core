@@ -1,4 +1,17 @@
-import type { Campaign } from "../types/campaign.ts";
+import type { Campaign, CampaignStatus } from "../types/campaign";
+
+async function readErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const data: unknown = await response.json();
+
+    if (typeof data === "object" && data !== null &&
+      "error" in data && typeof data.error == "string") {
+       return data.error; 
+    } 
+  } catch {}
+
+  return `${fallback}: ${response.status}`;
+}
 
 export async function getCampaigns(): Promise<Campaign[]> {
   const response = await fetch("/api/campaigns");
@@ -47,4 +60,67 @@ export async function getCampaignById(id: string): Promise<Campaign> {
   const campaign: Campaign = await response.json();
 
   return campaign;
+}
+
+export async function updateCampaignName(id:string, name: string): Promise<Campaign> {
+  const response = await fetch(`/api/campaigns/${id}`,
+    {
+      method: "PATCH",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({name})
+    });
+  
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, "Failed to udpate camapign"));
+  }
+
+  const campaign: Campaign = await response.json();
+
+  return campaign;
+}
+
+export async function updateCampaignBudget(id: string, budget: number): Promise<Campaign> {
+  const response = await fetch(`/api/campaigns/${id}/budget`,
+    {
+      method: "PATCH",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({budget})
+    });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, "Failed to update budget"));
+  }
+
+  const campaign: Campaign = await response.json();
+
+  return campaign;
+}
+
+export async function updateCampaignStatus(id: string, status: CampaignStatus): Promise<Campaign> {
+  const response = await fetch(`/api/campaigns/${id}/status`,
+    {
+      method: "PATCH",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({status})
+    });
+  
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, "Failed to update campaign status"));
+  }
+
+  const campaign: Campaign = await response.json();
+
+  return campaign;
+}
+  
+export async function archiveCampaign(id: string): Promise<void> {
+  const response = await fetch(`/api/campaigns/${id}`,
+    {
+      method: "DELETE"
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, "Failed to archive campaign"));
+  }
 }

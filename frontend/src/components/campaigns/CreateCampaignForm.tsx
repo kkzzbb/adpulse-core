@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { createCampaign } from "../../api/campaigns.ts";
-import type { Campaign } from "../../types/campaign.ts";
+import { createCampaign } from "../../api/campaigns";
+import type { Campaign } from "../../types/campaign";
 
 interface CreateCampaignFormProps {
   onCampaignCreated: (campaign: Campaign) => void;

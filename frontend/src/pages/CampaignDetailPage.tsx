@@ -1,16 +1,29 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router";
-import { getCampaignById } from "../api/campaigns.ts";
-import { getCampaignCreatives } from "../api/creatives.ts";
-import type { Campaign } from "../types/campaign.ts";
-import type { Creative } from "../types/creative.ts";
+import { Link, useParams, useNavigate } from "react-router";
+import { getCampaignById } from "../api/campaigns";
+import { getCampaignCreatives } from "../api/creatives";
+import type { Campaign } from "../types/campaign";
+import type { Creative } from "../types/creative";
+import { ArchiveCampaignButton } from "../components/campaigns/ArchivedCampaignButton";
+import { CampaignBudgetForm } from "../components/campaigns/CampaignBudgetForm";
+import { CampaignStatusControls } from "../components/campaigns/CampaignStatusControls";
+import { EditCampaignNameForm } from "../components/campaigns/EditCampaignNameForm";
 
 export function CampaignDetailPage() {
+	const navigate = useNavigate();
 	const {campaignId} = useParams();
 	const [campaign, setCampaign] = useState<Campaign | null>(null);
 	const [creatives, setCreatives] = useState<Creative[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+
+	function handleCampaignUpdated(updatedCampaign: Campaign) {
+		setCampaign(updatedCampaign);
+	}
+
+	function handleArchived() {
+		navigate("/");
+	}
 
 	useEffect(() => {
 		if (!campaignId) {
@@ -88,6 +101,32 @@ export function CampaignDetailPage() {
 			<p>Budget: €{campaign.budget}</p>
 			<p>Spent: €{campaign.spent}</p>
 
+			{campaign.status === "COMPLETED" && (<p>
+				This campaign is completed. Campaign metadata and budget are now read-only.
+			</p>)}
+
+			<EditCampaignNameForm
+				campaign={campaign}
+				disabled={campaign.status === "COMPLETED"}
+				onCampaignUpdated={handleCampaignUpdated}
+			/>
+
+			<CampaignBudgetForm
+				campaign={campaign}
+				disabled={campaign.status === "COMPLETED"}
+				onCampaignUpdated={handleCampaignUpdated}
+			/>
+
+			<CampaignStatusControls
+				campaign={campaign}
+				onCampaignUpdated={handleCampaignUpdated}
+			/>
+
+			<ArchiveCampaignButton
+				campaign={campaign}
+				onArchived={handleArchived}
+			/>
+			
 			<h2>Creatives</h2>
 
 			{creatives.length === 0 ? (

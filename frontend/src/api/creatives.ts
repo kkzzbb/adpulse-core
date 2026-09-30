@@ -1,4 +1,4 @@
-import type { Creative } from "../types/creative.ts";
+import type { Creative } from "../types/creative";
 
 export async function getCampaignCreatives(campaignId: string): Promise<Creative[]> {
 	const response = await fetch(`/api/campaigns/${campaignId}/creatives`);

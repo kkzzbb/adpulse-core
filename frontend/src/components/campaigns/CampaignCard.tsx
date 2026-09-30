@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import type { Campaign } from "../../types/campaign.ts";
+import type { Campaign } from "../../types/campaign";
 
 interface CampaignCardProps {
 	campaign: Campaign;

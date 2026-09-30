@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { getCampaigns } from "../api/campaigns.ts";
-import type { Campaign } from "../types/campaign.ts";
-import { CampaignCard } from "../components/campaigns/CampaignCard.tsx";
-import { CreateCampaignForm } from "../components/campaigns/CreateCampaignForm.tsx";
+import { getCampaigns } from "../api/campaigns";
+import type { Campaign } from "../types/campaign";
+import { CampaignCard } from "../components/campaigns/CampaignCard";
+import { CreateCampaignForm } from "../components/campaigns/CreateCampaignForm";
 
 export function CampaignListPage() {
 	const [campaigns, setCampaigns] = useState<Campaign[]>([]);

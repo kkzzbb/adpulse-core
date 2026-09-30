@@ -1,8 +1,8 @@
 import { Route, Routes } from "react-router";
-import { AppLayout } from "./components/layout/AppLayout.tsx";
-import { CampaignDetailPage } from "./pages/CampaignDetailPage.tsx";
-import { CampaignListPage } from "./pages/CampaignListPage.tsx";
-import { NotFoundPage } from "./pages/NotFoundPage.tsx";
+import { AppLayout } from "./components/layout/AppLayout";
+import { CampaignDetailPage } from "./pages/CampaignDetailPage";
+import { CampaignListPage } from "./pages/CampaignListPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 
 function App() {
  return (
