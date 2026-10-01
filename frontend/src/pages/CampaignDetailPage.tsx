@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router";
 import { getCampaignById } from "../api/campaigns";
 import { getCampaignCreatives } from "../api/creatives";
@@ -12,88 +11,57 @@ import { CreateCreativeForm } from "../components/campaigns/CreateCreativeForm";
 import { CreativeCard } from "../components/campaigns/CreativeCard";
 import { StatusBadge } from "../components/campaigns/StatusBadge";
 import { formatCurrency } from "../utils/format";
+import { useQuery } from "@tanstack/react-query";
+import { campaignKeys } from "../query/campaignKeys";
 
 export function CampaignDetailPage() {
 	const navigate = useNavigate();
 	const {campaignId} = useParams();
-	const [campaign, setCampaign] = useState<Campaign | null>(null);
-	const [creatives, setCreatives] = useState<Creative[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-
-	function handleCampaignUpdated(updatedCampaign: Campaign) {
-		setCampaign(updatedCampaign);
-	}
-
-	function handleArchived() {
-		navigate("/");
-	}
-
-	function handleCreativeCreated(creative: Creative) {
-		setCreatives((currentCreatives) => [...currentCreatives, creative]);
-	}
-
-	useEffect(() => {
-		if (!campaignId) {
-			setError("Campaign ID is missing");
-			setLoading(false);
-			return;
-		}
-
-		let cancelled = false;
-
-		async function loadCampaign() {
-			try {
-				const [campaignData, creativeData] = await Promise.all([
-					getCampaignById(campaignId!),
-					getCampaignCreatives(campaignId!),
-				]);
-
-				if (cancelled) {
-					return;
+	const campaignQuery = useQuery({
+			queryKey: campaignKeys.detail(campaignId ?? ""),
+			queryFn: () => {
+				if (!campaignId) {
+					throw new Error("Campaign ID is missing");
 				}
-
-				setCampaign(campaignData);
-				setCreatives(creativeData);
-			} catch (error: unknown) {
-				if (cancelled) {
-					return;
+				return getCampaignById(campaignId);
+			},
+		enabled: Boolean(campaignId)
+		});
+	const creativesQuery = useQuery({
+			queryKey: campaignKeys.creatives(campaignId ?? ""),
+			queryFn: () => {
+				if (!campaignId) {
+					throw new Error("Campaign ID is missing");
 				}
+				return getCampaignCreatives(campaignId);
+			},
+			enabled: Boolean(campaignId)
+		});
+	const campaign = campaignQuery.data;
+	const creatives = creativesQuery.data ?? [];
+	const isPending = campaignQuery.isPending || creativesQuery.isPending;
 
-				if (error instanceof Error) {	
-					setError(error.message);
-				} else {
-					setError("An unknown error occurred");
-				}
-			} finally {
-				if (!cancelled) {
-					setLoading(false);
-				}
-			}
-		}
-
-		loadCampaign();
-
-		return () => { cancelled = true; };
-	}, [campaignId]);
-
-	if (loading) {
+	if (isPending) {
 		return (
 			<div className="page-state">
-				<p>Loading campaign details...</p>
+				<p>
+					Loading campaign...
+				</p>
 			</div>
 		);
 	}
 
-	if (error) {
+	const queryError = campaignQuery.error ?? creativesQuery.error;
+
+	if (queryError) {
 		return (
 			<div className="page-state page-state--error"role="alert">
 				<strong>
 					Could not load campaign
 				</strong>
-
-				<p>{error}</p>
-
+				<p>
+					{queryError.message}
+				</p>
 				<Link className="text-link"to="/">
 					← Back to campaigns
 				</Link>
@@ -101,10 +69,32 @@ export function CampaignDetailPage() {
 		);
 	}
 
+	if (!campaignId) {
+		return (
+			<div className="page-state page-state--error">
+				Campaign ID is missing.
+			</div>
+		);
+	}
+
 	if (!campaign) {
 		return (
-			<p>Campaign not found.</p>
+			<div className="page-state">
+				Camapgin not found.
+			</div>
 		);
+	}
+
+	function handleCampaignUpdated(_updatedCampaign: Campaign) {
+		void campaignQuery.refetch();
+	}
+
+	function handleArchived() {
+		navigate("/");
+	}
+
+	function handleCreativeCreated(_creative: Creative) {
+		void creativesQuery.refetch();
 	}
 
 	return (

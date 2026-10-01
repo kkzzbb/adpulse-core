@@ -1,49 +1,20 @@
-import { useEffect, useState } from "react";
 import { getCampaigns } from "../api/campaigns";
-import type { Campaign } from "../types/campaign";
 import { CampaignCard } from "../components/campaigns/CampaignCard";
 import { CreateCampaignForm } from "../components/campaigns/CreateCampaignForm";
+import { useQuery } from "@tanstack/react-query";
+import { campaignKeys } from "../query/campaignKeys";
 
 export function CampaignListPage() {
-	const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-
-	useEffect(() => {
-		let cancelled = false;
-
-		async function loadCampaigns() {
-			try {
-				const data = await getCampaigns();
-
-				if (!cancelled) {
-					setCampaigns(data);
-				}
-			} catch (error: unknown) {
-				if (cancelled) {
-					return;
-				}
-
-				if (error instanceof Error) {
-					setError(error.message);
-				} else {
-					setError("An unknown error occurred");
-				}
-			} finally {
-				if (!cancelled) {
-					setLoading(false);
-				}
-			}
-		}
-
-		loadCampaigns();
-
-		return () => { cancelled = true; };
-	}, []);
+	const campaignsQuery = useQuery({
+		queryKey: campaignKeys.list(),
+		queryFn: getCampaigns
+	});
 	
-	function handleCampaignCreated(campaign: Campaign) {
-		setCampaigns((currentCampaigns) => [campaign, ...currentCampaigns]);
+	function handleCampaignCreated() {
+		void campaignsQuery.refetch();
 	}
+
+	const campaigns = campaignsQuery.data ?? [];
 
 	return (
 		<div className="page-stack">
@@ -69,24 +40,30 @@ export function CampaignListPage() {
 				<div className="section-heading">
 					<h2>Your campaigns</h2>
 
-					{!loading && !error && (<span className="item-count">
+					{campaignsQuery.isSuccess && (<span className="item-count">
 						{campaigns.length}{" "}campaigns
 					</span>)}
+					
+					{campaignsQuery.isFetching && !campaignsQuery.isPending && (
+            <span className="item-count">
+              Refreshing...
+            </span>
+          )}
 				</div>
 
-			{loading && (<div className="page-state">
+			{campaignsQuery.isPending && (<div className="page-state">
 				<p>Loading campaigns...</p>
 				</div>)}
 
-			{error && (<div className="page-state page-state--error"role="alert">
+			{campaignsQuery.isError && (<div className="page-state page-state--error"role="alert">
 				<strong>
 					Could not load campaigns
 				</strong>
 				
-				<p>Error: {error}</p>
+				<p>Error: {campaignsQuery.error.message}</p>
 			</div>)}
 
-			{!loading && !error && campaigns.length === 0 && (
+			{campaignsQuery.isSuccess && campaigns.length === 0 && (
 				<div className="page-state">
 					<strong>
 						No campaigns yet
@@ -95,7 +72,7 @@ export function CampaignListPage() {
 					<p> Create your first campaign above.</p>
 				</div>)}
 
-			{!loading && !error && campaigns.length > 0 && (
+			{campaignsQuery.isSuccess && campaigns.length > 0 && (
 				<div className="campaign-grid">
 					{campaigns.map((campaign) => (
 				<CampaignCard key={campaign.id} campaign={campaign} />
