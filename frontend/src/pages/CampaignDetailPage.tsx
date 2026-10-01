@@ -1,9 +1,7 @@
-import { Link, useParams, useNavigate } from "react-router";
+import { Link, useParams } from "react-router";
 import { getCampaignById } from "../api/campaigns";
 import { getCampaignCreatives } from "../api/creatives";
-import type { Campaign } from "../types/campaign";
-import type { Creative } from "../types/creative";
-import { ArchiveCampaignButton } from "../components/campaigns/ArchivedCampaignButton";
+import { ArchiveCampaignButton } from "../components/campaigns/ArchiveCampaignButton";
 import { CampaignBudgetForm } from "../components/campaigns/CampaignBudgetForm";
 import { CampaignStatusControls } from "../components/campaigns/CampaignStatusControls";
 import { EditCampaignNameForm } from "../components/campaigns/EditCampaignNameForm";
@@ -15,30 +13,36 @@ import { useQuery } from "@tanstack/react-query";
 import { campaignKeys } from "../query/campaignKeys";
 
 export function CampaignDetailPage() {
-	const navigate = useNavigate();
 	const {campaignId} = useParams();
 	const campaignQuery = useQuery({
-			queryKey: campaignKeys.detail(campaignId ?? ""),
-			queryFn: () => {
-				if (!campaignId) {
-					throw new Error("Campaign ID is missing");
-				}
-				return getCampaignById(campaignId);
-			},
+		queryKey: campaignKeys.detail(campaignId ?? ""),
+		queryFn: () => {
+			if (!campaignId) {
+				throw new Error("Campaign ID is missing");
+			}
+			return getCampaignById(campaignId);
+		},
 		enabled: Boolean(campaignId)
 		});
 	const creativesQuery = useQuery({
-			queryKey: campaignKeys.creatives(campaignId ?? ""),
-			queryFn: () => {
-				if (!campaignId) {
-					throw new Error("Campaign ID is missing");
-				}
-				return getCampaignCreatives(campaignId);
-			},
-			enabled: Boolean(campaignId)
-		});
-	const campaign = campaignQuery.data;
-	const creatives = creativesQuery.data ?? [];
+		queryKey: campaignKeys.creatives(campaignId ?? ""),
+		queryFn: () => {
+			if (!campaignId) {
+				throw new Error("Campaign ID is missing");
+			}
+			return getCampaignCreatives(campaignId);
+		},
+		enabled: Boolean(campaignId)
+	});
+
+	if (!campaignId) {
+		return (
+			<div className="page-state page-state--error" role="alert">
+				Campaign ID is missing.
+			</div>
+		);
+	}
+	
 	const isPending = campaignQuery.isPending || creativesQuery.isPending;
 
 	if (isPending) {
@@ -55,27 +59,22 @@ export function CampaignDetailPage() {
 
 	if (queryError) {
 		return (
-			<div className="page-state page-state--error"role="alert">
+			<div className="page-state page-state--error" role="alert">
 				<strong>
 					Could not load campaign
 				</strong>
 				<p>
 					{queryError.message}
 				</p>
-				<Link className="text-link"to="/">
+				<Link className="text-link" to="/">
 					← Back to campaigns
 				</Link>
 			</div>
 		);
 	}
 
-	if (!campaignId) {
-		return (
-			<div className="page-state page-state--error">
-				Campaign ID is missing.
-			</div>
-		);
-	}
+	const campaign = campaignQuery.data;
+	const creatives = creativesQuery.data ?? [];
 
 	if (!campaign) {
 		return (
@@ -85,21 +84,9 @@ export function CampaignDetailPage() {
 		);
 	}
 
-	function handleCampaignUpdated(_updatedCampaign: Campaign) {
-		void campaignQuery.refetch();
-	}
-
-	function handleArchived() {
-		navigate("/");
-	}
-
-	function handleCreativeCreated(_creative: Creative) {
-		void creativesQuery.refetch();
-	}
-
 	return (
 		<div className="page-stack">
-			<Link className="text-link"to ="/">
+			<Link className="text-link" to ="/">
 				 ← Back to campaigns
 			</Link>
 
@@ -157,23 +144,19 @@ export function CampaignDetailPage() {
 					<EditCampaignNameForm
 						campaign={campaign}
 						disabled={campaign.status === "COMPLETED"}
-						onCampaignUpdated={handleCampaignUpdated}
 					/>
 
 					<CampaignBudgetForm
 						campaign={campaign}
 						disabled={campaign.status === "COMPLETED"}
-						onCampaignUpdated={handleCampaignUpdated}
 					/>
 
 					<CampaignStatusControls
 						campaign={campaign}
-						onCampaignUpdated={handleCampaignUpdated}
 					/>
 
 					<ArchiveCampaignButton
 						campaign={campaign}
-						onArchived={handleArchived}
 					/>
 				</div>
 
@@ -188,7 +171,7 @@ export function CampaignDetailPage() {
 					</div>
 
 					{campaign.status === "DRAFT" ? (
-						<CreateCreativeForm campaignId={campaign.id} onCreativeCreated={handleCreativeCreated}/>
+						<CreateCreativeForm campaignId={campaign.id}/>
 					) : (
 						<div className="notice">
 							New creatives can only be added while the campign is in Draft status.

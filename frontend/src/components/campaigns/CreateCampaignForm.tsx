@@ -1,46 +1,48 @@
 import { useState } from "react";
 import { createCampaign } from "../../api/campaigns";
-import type { Campaign } from "../../types/campaign";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { campaignKeys } from "../../query/campaignKeys";
 
-interface CreateCampaignFormProps {
-  onCampaignCreated: (campaign: Campaign) => void;
-}
-
-export function CreateCampaignForm({
-  onCampaignCreated,
-}: CreateCampaignFormProps) {
-  const [name, setName] = useState("");
+export function CreateCampaignForm() {
+  const queryClient = useQueryClient();
+	const [name, setName] = useState("");
   const [budget, setBudget] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSubmit(
-	event: React.FormEvent<HTMLFormElement>,
-  ) {
-	event.preventDefault();
-
-	setSubmitting(true);
-	setError(null);
-
-	try {
-	  const campaign = await createCampaign({
-		name,
-		budget: Number(budget),
-	  });
-
-	  onCampaignCreated(campaign);
-	  setName("");
-	  setBudget("");
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			setError(error.message);
-		} else {
-			setError("An unknown error occurred");
+  const [validationError, setValidationError] = useState<string | null>(null);
+	
+	const createCampaignMutation = useMutation({
+		mutationFn: createCampaign,
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({queryKey: campaignKeys.list()});
+			setName("");
+			setBudget("");
+			setValidationError(null);
 		}
-	} finally {
-		setSubmitting(false);
+	});
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) 
+	{
+		event.preventDefault();
+		
+		const trimmedName = name.trim();
+    const numericBudget = Number(budget);
+
+    if (!trimmedName) {
+      setValidationError("Campaign name is required");
+      return;
+    }
+
+    if (!Number.isFinite(numericBudget) || numericBudget <= 0) {
+      setValidationError("Budget must be greater than zero");
+      return;
+    }
+
+		setValidationError(null);
+
+		createCampaignMutation.mutate({
+			name: trimmedName,
+			budget: numericBudget
+		});
 	}
-  }
 
   return (
 	<form onSubmit={handleSubmit}>
@@ -53,33 +55,35 @@ export function CreateCampaignForm({
 		  id="campaign-name"
 		  type="text"
 		  value={name}
-		  onChange={(event) => {
-			setName(event.target.value);
-		  }}
+			disabled={createCampaignMutation.isPending}
+		  onChange={(event) => {setName(event.target.value);}}
 		/>
 	  </div>
 	  <div>
-		<label htmlFor="campaign-budget">
-			Budget
-		</label>
-		<input
-		  id="campaign-budget"
-		  type="number"
-		  min="1"
-		  onChange={(event) => {
-			setBudget(event.target.value);
-		  }}
-		  value={budget}
-		/>
+			<label htmlFor="campaign-budget">
+				Budget
+			</label>
+			<input
+				id="campaign-budget"
+				type="number"
+				min="1"
+				value={budget}
+				disabled={createCampaignMutation.isPending}
+				onChange={(event) => {setBudget(event.target.value);}}
+			/>
 	  </div>
 
-	  {error && <p>Error: {error}</p>}
+	  {validationError && (<p className="form-error"role="alert">{validationError}</p>)}
 
-	  <button
+		{createCampaignMutation.isError && (<p className="form-error"role="alert">
+			{createCampaignMutation.error.message}</p>)}
+
+	  <button 
+			className="button button--primary"
 	  	type="submit"
-		disabled={submitting}
+			disabled={createCampaignMutation.isPending}
 	  >
-		{submitting ? "Creating..." : "Create Campaign"}
+			{createCampaignMutation.isPending ? "Creating..." : "Create Campaign"}
 	  </button>
 	</form>
   );

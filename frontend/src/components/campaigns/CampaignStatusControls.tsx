@@ -1,11 +1,10 @@
-import { useState } from "react";
-import { updateCampaignStatus } from "../../api/campaigns";
 import type { Campaign, CampaignStatus } from "../../types/campaign";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { campaignKeys } from "../../query/campaignKeys";
+import { updateCampaignStatus } from "../../api/campaigns";
 
 interface CampaignStatusControlsProps {
 	campaign: Campaign;
-
-	onCampaignUpdated: (campaign: Campaign) => void;
 }
 
 const allowedTransitions:
@@ -24,28 +23,21 @@ const statusLabels:
 		COMPLETED: "Completed"
 };
 
-export function CampaignStatusControls({campaign, onCampaignUpdated}: CampaignStatusControlsProps) {
-	const [submittingStatus, setSubmittingStatus] = useState<CampaignStatus | null>(null);
-	const [error, setError] = useState<string | null>(null);
+export function CampaignStatusControls({campaign}: CampaignStatusControlsProps) {
+	const queryClient = useQueryClient();
+	const updateStatusMutation = useMutation({
+		mutationFn: (status: CampaignStatus) =>updateCampaignStatus(campaign.id, status),
+    onSuccess: async () => {
+			await Promise.all([
+				queryClient.invalidateQueries({queryKey: campaignKeys.detail(campaign.id)}),
+        queryClient.invalidateQueries({queryKey: campaignKeys.list()})
+      ]);
+    }
+  });
 	const nextStatuses = allowedTransitions[campaign.status];
 
-	async function handleStatusChange(status: CampaignStatus) {
-		setSubmittingStatus(status);
-		setError(null);
-
-		try {
-			const updatedCampaign = await updateCampaignStatus(campaign.id, status);
-			
-			onCampaignUpdated(updatedCampaign);
-		} catch (error: unknown) {
-			if (error instanceof Error) {
-				setError(error.message);
-			} else {
-				setError("An unknown error occured");
-			}
-		} finally {
-			setSubmittingStatus(null);
-		}
+	function handleStatusChange(status: CampaignStatus) {
+		updateStatusMutation.mutate(status);
 	}
 
 	return (
@@ -67,17 +59,21 @@ export function CampaignStatusControls({campaign, onCampaignUpdated}: CampaignSt
 				</p> ) : (
 					nextStatuses.map((status) => (
 						<button
+							className="button button--secondary"
 							key={status}
 							type="button"
-							disabled={submittingStatus !== null}
+							disabled={updateStatusMutation.isPending}
 							onClick={() => handleStatusChange(status)}
 						>
-							{submittingStatus === status ? "Updating..." : `Move to ${statusLabels[status]}`}
+							{updateStatusMutation.isPending &&
+							updateStatusMutation.variables === status 
+							? "Updating..." : `Move to ${statusLabels[status]}`}
 						</button>
 					))
 				)}
 
-				{error && (<p className="form-error"role="alert">{error}</p>)}
+			{updateStatusMutation.isError && (<p className="form-error" role="alert">
+          {updateStatusMutation.error.message}</p>)}
 		</section>
 	);
 }

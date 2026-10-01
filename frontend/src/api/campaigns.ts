@@ -1,4 +1,4 @@
-import type { Campaign, CampaignStatus } from "../types/campaign";
+import type { Campaign, CampaignStatus, CreateCampaignInput } from "../types/campaign";
 import { readErrorMessage } from "./http";
 
 export async function getCampaigns(): Promise<Campaign[]> {
@@ -9,11 +9,6 @@ export async function getCampaigns(): Promise<Campaign[]> {
   }
   const data: Campaign[] = await response.json();
   return data;
-}
-
-export interface CreateCampaignInput {
-  name: string;
-  budget: number;
 }
 
 export async function createCampaign(

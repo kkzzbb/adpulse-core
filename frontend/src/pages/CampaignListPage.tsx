@@ -9,10 +9,6 @@ export function CampaignListPage() {
 		queryKey: campaignKeys.list(),
 		queryFn: getCampaigns
 	});
-	
-	function handleCampaignCreated() {
-		void campaignsQuery.refetch();
-	}
 
 	const campaigns = campaignsQuery.data ?? [];
 
@@ -33,7 +29,7 @@ export function CampaignListPage() {
 			</header>
 
 			<section className="panel">
-				<CreateCampaignForm onCampaignCreated={handleCampaignCreated} />
+				<CreateCampaignForm />
 			</section>
 
 			<section>

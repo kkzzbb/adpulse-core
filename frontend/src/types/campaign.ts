@@ -12,3 +12,8 @@ export interface Campaign {
   spent: number;
   status: CampaignStatus;
 }
+
+export interface CreateCampaignInput {
+  name: string,
+  budget: number;
+}

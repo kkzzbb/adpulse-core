@@ -1,53 +1,48 @@
 import React, { useEffect, useState } from  "react";
 import { updateCampaignBudget } from "../../api/campaigns";
 import type { Campaign } from "../../types/campaign";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { campaignKeys } from "../../query/campaignKeys";
 
 interface CampaignBudgetFormProps {
 	campaign: Campaign;
 	disabled?: boolean;
-	onCampaignUpdated: (campaign: Campaign) => void;
 }
 
-export function CampaignBudgetForm({
-	campaign,
-	disabled = false,
-	onCampaignUpdated
-}: CampaignBudgetFormProps) {
+export function CampaignBudgetForm({campaign,	disabled = false}: CampaignBudgetFormProps) {
+	const queryClient = useQueryClient();
 	const [budget, setBudget] = useState(String(campaign.budget));
-	const [submitting, setSubmitting] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const [validationError, setValidationError] = useState<string | null>(null);
+
+	const updateBudgetMutation = useMutation({
+		mutationFn: (newBudget: number) =>  updateCampaignBudget(campaign.id, newBudget),
+		onSuccess: async () => {
+			await Promise.all([
+				queryClient.invalidateQueries({queryKey: campaignKeys.detail(campaign.id)}),
+				queryClient.invalidateQueries({queryKey: campaignKeys.list()})
+			]);
+		}
+	});
+
 
 	useEffect(() => {
 		setBudget(String(campaign.budget));
 	}, [campaign.budget]);
 
-	async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+	function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
 		event.preventDefault();
 
 		const numericBudget = Number(budget)
 
 		if (!Number.isFinite(numericBudget) || numericBudget <= 0) {
-			setError("Budget must be greater than zero");
-
+			setValidationError("Budget must be greater than zero");
 			return;
 		}
 
-		setSubmitting(true);
-		setError(null);
+		setValidationError(null);
 
-		try {
-			const updatedCampaign = await updateCampaignBudget(campaign.id, numericBudget);
-			onCampaignUpdated(updatedCampaign);
-		} catch (error: unknown) {
-			if (error instanceof Error) {
-				setError(error.message);
-			} else {
-				setError("An unknown error occured");
-			}
-		} finally {
-			setSubmitting(false);
-		}
-	}
+		updateBudgetMutation.mutate(numericBudget);
+	}	
 	
 	return (
 		<form onSubmit={handleSubmit}>
@@ -55,26 +50,31 @@ export function CampaignBudgetForm({
 				Budget
 			</h2>
 
-			<label>
+			<label htmlFor="campaign-budget">
 				Budget (€)
-				<input
-					type="number"
-					min="0"
-					step="0.01"
-					value={budget}
-					disabled={disabled || submitting}
-					onChange={(event) => setBudget(event.target.value)}
-				/>
 			</label>
 
-			<button
-				type="submit"
-				disabled={disabled || submitting}
-			>
-				{submitting ? "Saving..." : "Update budget"}
-			</button>
+			<input
+				id="campaign-budget"
+				type="number"
+				min="0.01"
+				step="0.01"
+				value={budget}
+				disabled={disabled || updateBudgetMutation.isPending}
+				onChange={(event) => setBudget(event.target.value)}
+			/>
 
-			{error && (<p className="form-error"role="alert">{error}</p>)}
+			{validationError && (<p className="form-error" role="alert">{validationError}</p>)}
+			
+			{updateBudgetMutation.isError && (<p className="form-error" role="alert">{updateBudgetMutation.error.message}</p>)}
+			
+			<button
+				className="button button--primary"
+				type="submit"
+				disabled={disabled || updateBudgetMutation.isPending}
+			>
+				{updateBudgetMutation.isPending ? "Saving..." : "Update budget"}
+			</button>
 		</form>
 	);
 }
