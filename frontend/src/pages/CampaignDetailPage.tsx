@@ -1,6 +1,4 @@
 import { Link, useParams } from "react-router";
-import { getCampaignById } from "../api/campaigns";
-import { getCampaignCreatives } from "../api/creatives";
 import { ArchiveCampaignButton } from "../components/campaigns/ArchiveCampaignButton";
 import { CampaignBudgetForm } from "../components/campaigns/CampaignBudgetForm";
 import { CampaignStatusControls } from "../components/campaigns/CampaignStatusControls";
@@ -10,30 +8,12 @@ import { CreativeCard } from "../components/campaigns/CreativeCard";
 import { StatusBadge } from "../components/campaigns/StatusBadge";
 import { formatCurrency } from "../utils/format";
 import { useQuery } from "@tanstack/react-query";
-import { campaignKeys } from "../query/campaignKeys";
+import { campaignQueries } from "../query/campaignQueries";
 
 export function CampaignDetailPage() {
 	const {campaignId} = useParams();
-	const campaignQuery = useQuery({
-		queryKey: campaignKeys.detail(campaignId ?? ""),
-		queryFn: () => {
-			if (!campaignId) {
-				throw new Error("Campaign ID is missing");
-			}
-			return getCampaignById(campaignId);
-		},
-		enabled: Boolean(campaignId)
-		});
-	const creativesQuery = useQuery({
-		queryKey: campaignKeys.creatives(campaignId ?? ""),
-		queryFn: () => {
-			if (!campaignId) {
-				throw new Error("Campaign ID is missing");
-			}
-			return getCampaignCreatives(campaignId);
-		},
-		enabled: Boolean(campaignId)
-	});
+	const campaignQuery = useQuery(campaignQueries.detail(campaignId));
+	const creativesQuery = useQuery(campaignQueries.creatives(campaignId));
 
 	if (!campaignId) {
 		return (

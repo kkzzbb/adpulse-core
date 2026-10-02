@@ -1,5 +1,5 @@
 import type { Creative, CreateCreativeInput } from "../types/creative";
-import { readErrorMessage } from "./http";
+import { createApiError } from "./http";
 
 export async function getCampaignCreatives(campaignId: string): Promise<Creative[]> {
 	const response = await fetch(`/api/campaigns/${campaignId}/creatives`);
@@ -23,7 +23,7 @@ export async function createCreative(campaignId: string, input:CreateCreativeInp
 	);
 
 	if (!response.ok) {
-		throw new Error(await readErrorMessage(response, "Failed to create creative"));
+		throw await createApiError(response, "Failed to create creative");
 	}
 
 	const creative: Creative = await response.json();

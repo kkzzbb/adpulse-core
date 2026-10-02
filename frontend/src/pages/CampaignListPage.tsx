@@ -1,14 +1,10 @@
-import { getCampaigns } from "../api/campaigns";
 import { CampaignCard } from "../components/campaigns/CampaignCard";
 import { CreateCampaignForm } from "../components/campaigns/CreateCampaignForm";
 import { useQuery } from "@tanstack/react-query";
-import { campaignKeys } from "../query/campaignKeys";
+import { campaignQueries } from "../query/campaignQueries";
 
 export function CampaignListPage() {
-	const campaignsQuery = useQuery({
-		queryKey: campaignKeys.list(),
-		queryFn: getCampaigns
-	});
+	const campaignsQuery = useQuery(campaignQueries.list());
 
 	const campaigns = campaignsQuery.data ?? [];
 

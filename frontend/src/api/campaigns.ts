@@ -1,5 +1,5 @@
 import type { Campaign, CampaignStatus, CreateCampaignInput } from "../types/campaign";
-import { readErrorMessage } from "./http";
+import { createApiError } from "./http";
 
 export async function getCampaigns(): Promise<Campaign[]> {
   const response = await fetch("/api/campaigns");
@@ -54,7 +54,7 @@ export async function updateCampaignName(id:string, name: string): Promise<Campa
     });
   
   if (!response.ok) {
-    throw new Error(await readErrorMessage(response, "Failed to udpate camapign"));
+    throw await createApiError(response, "Failed to udpate camapign");
   }
 
   const campaign: Campaign = await response.json();
@@ -71,7 +71,7 @@ export async function updateCampaignBudget(id: string, budget: number): Promise<
     });
 
   if (!response.ok) {
-    throw new Error(await readErrorMessage(response, "Failed to update budget"));
+    throw await createApiError(response, "Failed to update budget");
   }
 
   const campaign: Campaign = await response.json();
@@ -88,7 +88,7 @@ export async function updateCampaignStatus(id: string, status: CampaignStatus): 
     });
   
   if (!response.ok) {
-    throw new Error(await readErrorMessage(response, "Failed to update campaign status"));
+    throw await createApiError(response, "Failed to update campaign status");
   }
 
   const campaign: Campaign = await response.json();
@@ -104,6 +104,6 @@ export async function archiveCampaign(id: string): Promise<void> {
   );
 
   if (!response.ok) {
-    throw new Error(await readErrorMessage(response, "Failed to archive campaign"));
+    throw await createApiError(response, "Failed to archive campaign");
   }
 }
