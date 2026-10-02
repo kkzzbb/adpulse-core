@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { updateCampaignName } from "../../api/campaigns";
 import type { Campaign } from "../../types/campaign";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { campaignKeys } from "../../query/campaignKeys";
+import { updateCampaignCache } from "../../query/updateCampaignCache";
 
 interface EditCampaignNameFormProps {
 	campaign: Campaign;
@@ -15,11 +15,9 @@ export function EditCampaignNameForm({campaign, disabled = false}: EditCampaignN
 	const [validationError, setValidationError] = useState<string | null>(null);
 
 	const updateNameMutation = useMutation({
-		mutationFn: (name: string) => updateCampaignName(campaign.id, name),
-		onSuccess: async () => {await Promise.all([
-				queryClient.invalidateQueries({queryKey: campaignKeys.detail(campaign.id)}),
-				queryClient.invalidateQueries({queryKey: campaignKeys.list()})
-			]);
+		mutationFn: (newName: string) => updateCampaignName(campaign.id, newName),
+		onSuccess: (updatedCampaign)=> {
+			updateCampaignCache(queryClient, updatedCampaign);
 		} 
 	});
 	

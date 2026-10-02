@@ -1,7 +1,7 @@
 import type { Campaign, CampaignStatus } from "../../types/campaign";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { campaignKeys } from "../../query/campaignKeys";
 import { updateCampaignStatus } from "../../api/campaigns";
+import { updateCampaignCache } from "../../query/updateCampaignCache";
 
 interface CampaignStatusControlsProps {
 	campaign: Campaign;
@@ -27,11 +27,8 @@ export function CampaignStatusControls({campaign}: CampaignStatusControlsProps) 
 	const queryClient = useQueryClient();
 	const updateStatusMutation = useMutation({
 		mutationFn: (status: CampaignStatus) =>updateCampaignStatus(campaign.id, status),
-    onSuccess: async () => {
-			await Promise.all([
-				queryClient.invalidateQueries({queryKey: campaignKeys.detail(campaign.id)}),
-        queryClient.invalidateQueries({queryKey: campaignKeys.list()})
-      ]);
+    onSuccess: (updatedCampaign) => {
+			updateCampaignCache(queryClient, updatedCampaign);
     }
   });
 	const nextStatuses = allowedTransitions[campaign.status];

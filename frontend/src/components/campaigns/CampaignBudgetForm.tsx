@@ -2,7 +2,7 @@ import React, { useEffect, useState } from  "react";
 import { updateCampaignBudget } from "../../api/campaigns";
 import type { Campaign } from "../../types/campaign";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { campaignKeys } from "../../query/campaignKeys";
+import { updateCampaignCache } from "../../query/updateCampaignCache";
 
 interface CampaignBudgetFormProps {
 	campaign: Campaign;
@@ -16,11 +16,8 @@ export function CampaignBudgetForm({campaign,	disabled = false}: CampaignBudgetF
 
 	const updateBudgetMutation = useMutation({
 		mutationFn: (newBudget: number) =>  updateCampaignBudget(campaign.id, newBudget),
-		onSuccess: async () => {
-			await Promise.all([
-				queryClient.invalidateQueries({queryKey: campaignKeys.detail(campaign.id)}),
-				queryClient.invalidateQueries({queryKey: campaignKeys.list()})
-			]);
+		onSuccess: (updatedCampaign) => {
+			updateCampaignCache(queryClient, updatedCampaign);
 		}
 	});
 
