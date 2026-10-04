@@ -6,6 +6,13 @@ const envSchema = z.object({
 	PORT: z.coerce.number().int().positive().default(3000),
 
 	DEFAULT_USER_ID: z.uuid(),
+	SESSION_SECRET: z.string().min(32),
+
+	NODE_ENV: z.enum([
+    "development",
+    "test",
+    "production",
+  ]).default("development"),
 });
 
 export const env = envSchema.parse(process.env);

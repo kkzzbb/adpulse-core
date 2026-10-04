@@ -11,6 +11,7 @@ import { CreativeController } from "./controllers/creative.controller.js";
 import { PostgresCreativeRepository } from "./repositories/postgres-creative.repository.js";
 import { CreativeService } from "./services/creative.service.js";
 import { PostgresTransactionManager } from "./transactions/postgres-transaction-manager.js";
+import { createSessionMiddleware } from "./middleware/session.js";
 
 export const app = express();
 
@@ -26,7 +27,11 @@ const creativeService = new CreativeService(campaignRepository, creativeReposito
 const campaignController = new CampaignController(campaignService);
 const creativeController = new CreativeController(creativeService);
 
-
+app.use(createSessionMiddleware({
+	pool,
+	secret: env.SESSION_SECRET,
+	production: env.NODE_ENV === "production",
+}));
 
 app.get("/health", (_req, res) => {
 	res.json({
