@@ -21,15 +21,13 @@ export class CampaignService {
 	) {}
 
 	async getCampaigns(userId: string): Promise<Campaign[]> {
-		const campaigns = await this.campaignRepository.findAll();	
-
-		return campaigns.filter(campaign => campaign.userId === userId);
+		return this.campaignRepository.findAllByUserId(userId);
 	}
 
 	async getCampaignById(userId: string, id: string): Promise<Campaign> {
-		const campaign = await this.campaignRepository.findById(id);
+		const campaign = await this.campaignRepository.findByIdForUser(userId, id);
 
-		if (!campaign || campaign.userId !== userId) {
+		if (!campaign) {
 			throw new AppError("Campaign not found",404);
 		}
 
@@ -69,7 +67,7 @@ export class CampaignService {
     	);
 		}
 
-		const updatedCampaign = await this.campaignRepository.updateStatus(id, newStatus);
+		const updatedCampaign = await this.campaignRepository.updateStatusForUser(userId, id, newStatus);
 
 		if (!updatedCampaign) {
 			throw new AppError("Campaign not found", 404);
@@ -97,7 +95,7 @@ export class CampaignService {
 			return campaign;
 		}
 
-		const updatedCampaign = await this.campaignRepository.updateBudget(id, newBudget);
+		const updatedCampaign = await this.campaignRepository.updateBudgetForUser(userId, id, newBudget);
 
 		if (!updatedCampaign) {
 			throw new AppError("Campaign not found", 404);
@@ -121,7 +119,7 @@ export class CampaignService {
 			return campaign;
 		}
 
-		const updatedCampaign = await this.campaignRepository.updateName(id, input.name);
+		const updatedCampaign = await this.campaignRepository.updateNameForUser(userId, id, input.name);
 
 		if(!updatedCampaign) {
 			throw new AppError("Campaign not found", 404);
@@ -141,39 +139,39 @@ export class CampaignService {
 			throw new AppError("Active campaigns must be paused or completed before archiving", 409);
 		}
 
-		const archived = await this.campaignRepository.archive(id);
+		const archived = await this.campaignRepository.archiveForUser(userId, id);
 
 		if (!archived) {
 			throw new AppError("Campaign not found", 404);
 		}
 	}
 
-async createCampaignWithCreative(userId: string, input: CreateCampaignWithCreativeInput){
-	return this.transactionManager.run(async ({
-		campaignRepository, creativeRepository
-		}) => {
-			const campaign: Campaign = {
-				id: randomUUID(),
-				userId,
-				name: input.name,
-				budget: input.budget,
-				spent: 0,
-				status: "DRAFT",
-			};
-		
-			const savedCampaign = await campaignRepository.save(campaign);
+	async createCampaignWithCreative(userId: string, input: CreateCampaignWithCreativeInput){
+		return this.transactionManager.run(async ({
+			campaignRepository, creativeRepository
+			}) => {
+				const campaign: Campaign = {
+					id: randomUUID(),
+					userId,
+					name: input.name,
+					budget: input.budget,
+					spent: 0,
+					status: "DRAFT",
+				};
 			
-			const creative: Creative = {
-				id: randomUUID(),
-				campaignId: savedCampaign.id,
-				headline: input.creative.headline,
-				body: input.creative.body,
-				destinationUrl: input.creative.destinationUrl
-			};
+				const savedCampaign = await campaignRepository.save(campaign);
+				
+				const creative: Creative = {
+					id: randomUUID(),
+					campaignId: savedCampaign.id,
+					headline: input.creative.headline,
+					body: input.creative.body,
+					destinationUrl: input.creative.destinationUrl
+				};
 
-			const savedCreative = await creativeRepository.save(creative);
+				const savedCreative = await creativeRepository.save(creative);
 
-			return { campaign: savedCampaign, creative: savedCreative };
-		});
+				return { campaign: savedCampaign, creative: savedCreative };
+			});
 	}
 }

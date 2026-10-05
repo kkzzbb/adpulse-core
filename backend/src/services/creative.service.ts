@@ -13,9 +13,9 @@ export class CreativeService {
 
 
 	async getCampaignCreatives(userId: string, campaignId: string): Promise<Creative[]> {
-		const campaign = await this.campaignRepository.findById(campaignId);
+		const campaign = await this.campaignRepository.findByIdForUser(userId, campaignId);
 
-		if (!campaign || campaign.userId !== userId) {
+		if (!campaign) {
 			throw new AppError("Campaign not found", 404);
 		}
 
@@ -23,9 +23,9 @@ export class CreativeService {
 	}
 
 	async createCreative(userId: string, campaignId: string, input: CreateCreativeInput): Promise<Creative> {
-		const campaign = await this.campaignRepository.findById(campaignId);
+		const campaign = await this.campaignRepository.findByIdForUser(userId, campaignId);
 
-		if (!campaign || campaign.userId !== userId) {
+		if (!campaign) {
 			throw new AppError("Campaign not found", 404);
 		}
 

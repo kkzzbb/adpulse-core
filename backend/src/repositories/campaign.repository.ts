@@ -1,19 +1,19 @@
 import type { Campaign, CampaignStatus } from "../domain/campaign.js";
 
 export interface CampaignRepository {
-	findAll(): Promise<Campaign[]>;
+	findAllByUserId(userId: string): Promise<Campaign[]>;
 
-	findById(id: string): Promise<Campaign | null>;
+	findByIdForUser(userId: string, id: string): Promise<Campaign | null>;
 
 	save(campaign: Campaign): Promise<Campaign>;
 
-	updateName(id: string, name: string): Promise<Campaign | null>;
+	updateNameForUser(userId: string, id: string, name: string): Promise<Campaign | null>;
 
-	updateStatus(id: string, status: CampaignStatus): Promise<Campaign | null>;
+	updateStatusForUser(userId: string, id: string, status: CampaignStatus): Promise<Campaign | null>;
 
-	updateBudget(id: string, budget: number): Promise<Campaign | null>;
+	updateBudgetForUser(userId: string, id: string, budget: number): Promise<Campaign | null>;
 
-	archive(id: string): Promise<boolean>;
+	archiveForUser(userId: string, id: string): Promise<boolean>;
 }
 
 const FIXTURE_USER_ID = "00000000-0000-4000-8000-000000000001";
@@ -41,19 +41,19 @@ export class InMemoryCampaignRepository implements CampaignRepository
 
 	private readonly archivedIds = new Set<string>();
 
-	async findAll(): Promise<Campaign[]> {
+	async findAllByUserId(userId: string): Promise<Campaign[]> {
 		return this.campaigns.filter(
-			(campaign) => !this.archivedIds.has(campaign.id)
+			(campaign) => campaign.userId === userId && !this.archivedIds.has(campaign.id)
 		).map((campaign) => ({ ...campaign }));
 	}
 
-	async findById(id: string): Promise<Campaign | null> {
+	async findByIdForUser(userId: string, id: string): Promise<Campaign | null> {
 		if (this.archivedIds.has(id)) {
 			return null;
 		}
 
 		const campaign = this.campaigns.find(
-			(campaign) => campaign.id === id,
+			(campaign) => campaign.id === id && campaign.userId === userId,
 		);
 
 		return campaign? { ...campaign } : null;
@@ -65,9 +65,10 @@ export class InMemoryCampaignRepository implements CampaignRepository
 		return { ...campaign, };
 	}
 
-	async updateStatus(id: string, status: CampaignStatus): Promise<Campaign | null> {
+	async updateStatusForUser(userId: string,id: string, status: CampaignStatus): Promise<Campaign | null> {
 		const index = this.campaigns.findIndex(
-			(campaign) => campaign.id === id
+			(campaign) => campaign.id === id && campaign.userId === userId  &&
+          !this.archivedIds.has(campaign.id)
 		);
 		
 		if (index === -1) {
@@ -89,9 +90,10 @@ export class InMemoryCampaignRepository implements CampaignRepository
 		return { ...updatedCampaign };
 	}
 
-	async updateBudget(id: string, budget: number): Promise<Campaign | null> {
+	async updateBudgetForUser(userId: string, id: string, budget: number): Promise<Campaign | null> {
 		const index = this.campaigns.findIndex(
-			(campaign) => campaign.id === id
+			(campaign) => campaign.id === id && campaign.userId === userId &&
+					!this.archivedIds.has(campaign.id)
 		);
 
 		if (index === -1) {
@@ -113,13 +115,14 @@ export class InMemoryCampaignRepository implements CampaignRepository
 		return { ...updatedCampaign };
 	}
 
-	async updateName(id: string, name: string): Promise<Campaign | null> {
+	async updateNameForUser(userId: string, id: string, name: string): Promise<Campaign | null> {
 		if (this.archivedIds.has(id)) {
 			return null;
 		}
 
 		const index = this.campaigns.findIndex(
-			(campaign) => campaign.id === id
+			(campaign) => campaign.id === id && campaign.userId === userId &&
+					!this.archivedIds.has(campaign.id)
 		);
 
 		if (index === -1) {
@@ -141,9 +144,9 @@ export class InMemoryCampaignRepository implements CampaignRepository
 		return { ...updatedCampaign };
 	}
 
-	async archive(id: string): Promise<boolean> {
+	async archiveForUser(userId: string, id: string): Promise<boolean> {
 		const campaign = this.campaigns.find(
-			(campaign) => campaign.id === id
+			(campaign) => campaign.id === id && campaign.userId === userId
 		);
 
 		if (!campaign || this.archivedIds.has(id)) {

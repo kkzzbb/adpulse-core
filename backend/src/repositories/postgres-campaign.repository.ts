@@ -27,24 +27,24 @@ function mapCampaignRow(row: CampaignRow): Campaign {
 export class PostgresCampaignRepository implements CampaignRepository {
 	constructor(private readonly db: Queryable) {}
 
-	async findAll(): Promise<Campaign[]> {
+	async findAllByUserId(userId: string): Promise<Campaign[]> {
 		const result = await this.db.query<CampaignRow>(`
 			SELECT id, user_id, name, budget, spent, status
 			FROM campaigns
-			WHERE archived_at IS NULL
-			ORDER BY created_at DESC`);
+			WHERE user_id = $1 AND archived_at IS NULL
+			ORDER BY created_at DESC`, [userId]);
 	
 		return result.rows.map(mapCampaignRow);
 	}
 
 
-	async findById(id: string): Promise<Campaign | null> {
+	async findByIdForUser(userId: string, id: string): Promise<Campaign | null> {
 		const result = await this.db.query<CampaignRow>(
 			`
 			SELECT id, user_id, name, budget, spent, status
 			FROM campaigns
-			WHERE id = $1 AND archived_at IS NULL`,
-			[id],
+			WHERE id = $1 AND user_id = $2 AND archived_at IS NULL`,
+			[id, userId],
 		);
 
 		const row = result.rows[0];
@@ -81,17 +81,14 @@ export class PostgresCampaignRepository implements CampaignRepository {
 		return mapCampaignRow(row);
 	}
 
-	async updateStatus(id: string, status: CampaignStatus): Promise<Campaign | null> {
+	async updateStatusForUser(userId: string, id: string, status: CampaignStatus): Promise<Campaign | null> {
 		const result = await this.db.query<CampaignRow>(
 			`
 			UPDATE campaigns
-			SET status = $2, updated_at = NOW()
-			WHERE id = $1 AND archived_at IS NULL
+			SET status = $3, updated_at = NOW()
+			WHERE id = $1 AND user_id = $2 AND archived_at IS NULL
 			RETURNING	id, user_id, name,	budget,	spent, status`,
-				[
-					id,
-					status,
-				]
+				[id, userId, status]
 		);
 
 		const row = result.rows[0];
@@ -103,17 +100,14 @@ export class PostgresCampaignRepository implements CampaignRepository {
 		return mapCampaignRow(row);
 	}
 
-	async updateBudget(id: string, budget: number): Promise<Campaign | null> {
+	async updateBudgetForUser(userId: string, id: string, budget: number): Promise<Campaign | null> {
 		const result = await this.db.query<CampaignRow>(
 			`
 			UPDATE campaigns
-			SET budget = $2, updated_at = NOW()
-			WHERE id = $1 AND archived_at IS NULL
+			SET budget = $3, updated_at = NOW()
+			WHERE id = $1 AND user_id = $2 AND archived_at IS NULL
 			RETURNING id, user_id, name, budget, spent, status`,
-			[
-				id,
-				budget,
-			]
+			[id, userId, budget]
 		);
 
 		const row = result.rows[0];
@@ -125,17 +119,14 @@ export class PostgresCampaignRepository implements CampaignRepository {
 		return mapCampaignRow(row);
 	}
 
-	async updateName(id: string, name: string): Promise<Campaign | null> {
+	async updateNameForUser(userId: string, id: string, name: string): Promise<Campaign | null> {
 		const result = await this.db.query<CampaignRow>(
 			`
 			UPDATE campaigns
-			SET name = $2, updated_at = NOW()
-			WHERE id = $1 AND archived_at IS NULL
+			SET name = $3, updated_at = NOW()
+			WHERE id = $1 AND user_id = $2 AND archived_at IS NULL
 			RETURNING id, user_id, name, budget, spent, status`,
-			[
-				id,
-				name,
-			]
+			[id, userId, name]
 		);
 
 		const row = result.rows[0];
@@ -147,14 +138,14 @@ export class PostgresCampaignRepository implements CampaignRepository {
 		return mapCampaignRow(row);
 	}
 
-	async archive(id: string): Promise<boolean> {
+	async archiveForUser(userId: string, id: string): Promise<boolean> {
 		const result = await this.db.query(
 			`
 			UPDATE campaigns
 			SET archived_at = NOW(), updated_at = NOW()
-			WHERE id = $1 AND archived_at IS NULL
+			WHERE id = $1 AND user_id = $2 AND archived_at IS NULL
 			RETURNING id`,
-			[id]
+			[id, userId]
 		);
 		
 		return result.rowCount === 1;
