@@ -17,31 +17,29 @@ const allowedStatusTransitions: Record<CampaignStatus, CampaignStatus[]> = {
 export class CampaignService {
 	constructor(
 		private readonly campaignRepository: CampaignRepository,
-		private readonly defaultUserId: string,
 		private readonly transactionManager: TransactionManager
 	) {}
 
-	async getCampaigns(): Promise<Campaign[]> {
-		return this.campaignRepository.findAll();
+	async getCampaigns(userId: string): Promise<Campaign[]> {
+		const campaigns = await this.campaignRepository.findAll();	
+
+		return campaigns.filter(campaign => campaign.userId === userId);
 	}
 
-	async getCampaignById(id: string): Promise<Campaign> {
+	async getCampaignById(userId: string, id: string): Promise<Campaign> {
 		const campaign = await this.campaignRepository.findById(id);
 
-		if (!campaign) {
-			throw new AppError(
-				"Campaign not found",
-				404,
-			);
+		if (!campaign || campaign.userId !== userId) {
+			throw new AppError("Campaign not found",404);
 		}
 
 		return campaign;
 	}
 
-	async createCampaign(input: CreateCampaignInput): Promise<Campaign> {
+	async createCampaign(userId: string, input: CreateCampaignInput): Promise<Campaign> {
 		const campaign: Campaign = {
 			id: randomUUID(),
-			userId: this.defaultUserId,
+			userId,
 			name: input.name,
 			budget: input.budget,
 			spent: 0,
@@ -51,8 +49,8 @@ export class CampaignService {
 		return this.campaignRepository.save(campaign);
 	}
 
-	async updateCampaignStatus(id: string, newStatus: CampaignStatus): Promise<Campaign> {
-		const campaign = await this.campaignRepository.findById(id);
+	async updateCampaignStatus(userId: string, id: string, newStatus: CampaignStatus): Promise<Campaign> {
+		const campaign = await this.getCampaignById(userId, id);
 
 		if (!campaign) {
 			throw new AppError("Campaign not found", 404);
@@ -80,8 +78,8 @@ export class CampaignService {
 		return updatedCampaign;
 	}
 
-	async updateCampaignBudget(id: string, newBudget: number): Promise<Campaign> {
-		const campaign = await this.campaignRepository.findById(id);
+	async updateCampaignBudget(userId: string, id: string, newBudget: number): Promise<Campaign> {
+		const campaign = await this.getCampaignById(userId, id);
 
 		if (!campaign) {
 			throw new AppError("Campaign not found", 404);
@@ -108,8 +106,8 @@ export class CampaignService {
 		return updatedCampaign;
 	}
 
-	async updateCampaign(id: string, input: UpdateCampaignInput): Promise<Campaign> {
-		const campaign = await this.campaignRepository.findById(id);
+	async updateCampaign(userId: string, id: string, input: UpdateCampaignInput): Promise<Campaign> {
+		const campaign = await this.getCampaignById(userId, id);
 
 		if (!campaign) {
 			throw new AppError("Campaign not found", 404);
@@ -132,8 +130,8 @@ export class CampaignService {
 		return updatedCampaign;
 	}
 
-	async archiveCampaign(id: string): Promise<void> {
-		const campaign = await this.campaignRepository.findById(id);
+	async archiveCampaign(userId: string, id: string): Promise<void> {
+		const campaign = await this.getCampaignById(userId, id);
 
 		if (!campaign) {
 			throw new AppError("Campaign not found", 404);
@@ -150,13 +148,13 @@ export class CampaignService {
 		}
 	}
 
-async createCampaignWithCreative(input: CreateCampaignWithCreativeInput){
+async createCampaignWithCreative(userId: string, input: CreateCampaignWithCreativeInput){
 	return this.transactionManager.run(async ({
 		campaignRepository, creativeRepository
 		}) => {
 			const campaign: Campaign = {
 				id: randomUUID(),
-				userId: this.defaultUserId,
+				userId,
 				name: input.name,
 				budget: input.budget,
 				spent: 0,

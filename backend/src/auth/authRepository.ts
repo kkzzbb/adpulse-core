@@ -23,4 +23,6 @@ export interface AuthRepository {
 	createUserWithCredentials(input: CreateAuthUserInput): Promise<AuthUser>;
 
 	findLoginRecordByEmail(email: string): Promise<LoginRecord | null>;
+
+	findUserById(userId: string): Promise<AuthUser | null>;
 }

@@ -2,6 +2,7 @@ import type { Response, Request, NextFunction } from "express";
 import type { AuthService } from "./authService.js";
 import { InvalidCredentialsError, RegistrationConflictError } from "./authErrors.js";
 import { regenerateSession, saveSession, destroySession } from "./sessionHelpers.js";
+import { getAuthenticatedUserId } from "./getAuthenticatedUserId.js";
 
 export class AuthController {
 	constructor(private readonly authService: AuthService) {}
@@ -53,4 +54,21 @@ export class AuthController {
 			next(error);
 		}
 	};
-}
+
+	me = async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const userId = getAuthenticatedUserId(req);
+			const user = await this.authService.getCurrentUser(userId);
+
+			if (!user) {
+				await destroySession(req);
+				res.clearCookie("adpulse.sid", { path: "/" });
+				res.status(401).json({ error: "Authentication required" });
+				return;
+			}
+			res.status(200).json({ user });
+		} catch (error) {
+			next(error);
+		}
+	};
+}	

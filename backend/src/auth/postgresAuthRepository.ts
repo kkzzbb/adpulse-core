@@ -99,4 +99,28 @@ export class PostgresAuthRepository implements AuthRepository {
 			passwordHash: row.password_hash
 		};
 	}
+
+	async findUserById(userId: string): Promise<AuthUser | null> {
+		const result = await this.pool.query<UserRow>(
+			`
+			SELECT id, email, display_name
+			FROM users
+			WHERE id = $1
+			LIMIT 1
+		`,
+			[userId]
+		);
+
+		const row = result.rows[0];
+		
+		if (!row) {
+			return null;
+		}
+
+		return {
+			id: row.id,
+			email: row.email,
+			displayName: row.display_name
+		};
+	}
 }

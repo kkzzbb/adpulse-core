@@ -16,6 +16,7 @@ import { AuthService } from "./auth/authService.js";
 import { AuthController } from "./auth/authController.js";
 import { PostgresAuthRepository } from "./auth/postgresAuthRepository.js";
 import { createAuthRouter } from "./auth/authRoutes.js";
+import { requireAuth } from "./auth/requireAuth.js";
 
 export const app = express();
 
@@ -25,7 +26,7 @@ const campaignRepository = new PostgresCampaignRepository(pool);
 const creativeRepository = new PostgresCreativeRepository(pool);
 const transactionManager = new PostgresTransactionManager(pool);
 
-const campaignService = new CampaignService(campaignRepository, env.DEFAULT_USER_ID, transactionManager);
+const campaignService = new CampaignService(campaignRepository, transactionManager);
 const creativeService = new CreativeService(campaignRepository, creativeRepository);
 
 const campaignController = new CampaignController(campaignService);
@@ -52,6 +53,7 @@ app.get("/health", (_req, res) => {
 
 app.use(
 	"/api/campaigns",
+	requireAuth,
 	createCampaignRouter(campaignController, creativeController)
 );
 

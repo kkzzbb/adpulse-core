@@ -47,4 +47,8 @@ export class AuthService {
 		
 		return record.user;
 	}
+
+	async getCurrentUser(userId: string): Promise<AuthUser | null> {
+		return this.authRepository.findUserById(userId);
+	}
 }

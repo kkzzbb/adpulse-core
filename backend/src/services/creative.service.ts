@@ -12,20 +12,20 @@ export class CreativeService {
 	) {}
 
 
-	async getCampaignCreatives(campaignId: string): Promise<Creative[]> {
+	async getCampaignCreatives(userId: string, campaignId: string): Promise<Creative[]> {
 		const campaign = await this.campaignRepository.findById(campaignId);
 
-		if (!campaign) {
+		if (!campaign || campaign.userId !== userId) {
 			throw new AppError("Campaign not found", 404);
 		}
 
 		return this.creativeRepository.findByCampaignId(campaignId);
 	}
 
-	async createCreative(campaignId: string, input: CreateCreativeInput): Promise<Creative> {
+	async createCreative(userId: string, campaignId: string, input: CreateCreativeInput): Promise<Creative> {
 		const campaign = await this.campaignRepository.findById(campaignId);
 
-		if (!campaign) {
+		if (!campaign || campaign.userId !== userId) {
 			throw new AppError("Campaign not found", 404);
 		}
 
