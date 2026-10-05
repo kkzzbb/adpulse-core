@@ -522,6 +522,40 @@ button {
   border-radius: 10px;
 }
 
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+}
+
+.auth-card {
+  width: min(100%, 28rem);
+  padding: 2rem;
+  border: 1px solid #dfe3ea;
+  border-radius: 1rem;
+  background: white;
+}
+
+.auth-card form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.app-header__account {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.app-header__account div {
+  display: grid;
+}
+
+.app-header__account span {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
 
 .page-state,
 .empty-state {
