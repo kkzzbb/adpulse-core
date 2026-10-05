@@ -155,22 +155,3 @@ export class InMemoryCampaignRepository implements CampaignRepository
 		return true;
 	}
 }
-
-backend/.env.example
-backend/src/app.ts
-backend/src/auth/authController.ts
-backend/src/auth/authRepository.ts
-backend/src/auth/authRoutes.ts
-backend/src/auth/authService.ts
-backend/src/auth/postgresAuthRepository.ts
-backend/src/config/env.ts
-backend/src/controllers/campaign.controller.ts
-backend/src/controllers/creative.controller.ts
-backend/src/repositories/campaign.repository.ts
-backend/src/services/campaign.service.ts
-backend/src/services/creative.service.ts
-backend/src/auth/getAuthenticatedUserId.ts
-backend/src/auth/requireAuth.ts
-backend/src/types/express.d.ts
-package-lock.json
-package.json
