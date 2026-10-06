@@ -613,3 +613,61 @@ button {
     padding: 1.5rem;
   }
 }
+
+
+fieldset.targeting-devices {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+
+fieldset.targeting-devices legend {
+  padding: 0;
+  font-size: 0.9rem;
+  font-weight: 650;
+  color: #172033;
+}
+
+
+.checkbox-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  background: #ffffff;
+  border: 1px solid #cfd5df;
+  border-radius: 9px;
+}
+
+
+input[type="checkbox"] {
+  width: auto;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+
+.checkbox-box label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+
+fieldset.targeting-devices small {
+  margin-top: -0.2rem; 
+  color: #768096;      
+}
+
+form.targeting-form small {
+  margin-top: -0.2rem; 
+  color: #768096;      
+}

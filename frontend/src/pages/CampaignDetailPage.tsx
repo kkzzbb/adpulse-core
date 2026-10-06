@@ -9,6 +9,7 @@ import { StatusBadge } from "../components/campaigns/StatusBadge";
 import { formatCurrency } from "../utils/format";
 import { useQuery } from "@tanstack/react-query";
 import { campaignQueries } from "../query/campaignQueries";
+import { CampaignTargetingPanel } from "../components/campaigns/CampaignTargetingPanel";
 
 export function CampaignDetailPage() {
 	const {campaignId} = useParams();
@@ -140,6 +141,11 @@ export function CampaignDetailPage() {
 					/>
 				</div>
 
+				<CampaignTargetingPanel
+          campaignId={campaign.id}
+          campaignStatus={campaign.status}
+        />
+				
 				<section className="panel">
 					<div className="section-heading">
 						<h2>Creatives</h2>
