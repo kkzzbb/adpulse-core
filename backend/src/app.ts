@@ -17,6 +17,10 @@ import { AuthController } from "./auth/authController.js";
 import { PostgresAuthRepository } from "./auth/postgresAuthRepository.js";
 import { createAuthRouter } from "./auth/authRoutes.js";
 import { requireAuth } from "./auth/requireAuth.js";
+import { PostgresTargetingRepository } from "./repositories/postgres-targeting.repository.js";
+import { TargetingService } from "./services/targeting.service.js";
+import { TargetingController } from "./controllers/targeting.controller.js";
+import { createTargetingRouter } from "./routes/targeting.routes.js";
 
 export const app = express();
 
@@ -24,13 +28,19 @@ app.use(express.json());
 
 const campaignRepository = new PostgresCampaignRepository(pool);
 const creativeRepository = new PostgresCreativeRepository(pool);
+const targetingRepository = new PostgresTargetingRepository(pool);
+
 const transactionManager = new PostgresTransactionManager(pool);
 
 const campaignService = new CampaignService(campaignRepository, transactionManager);
 const creativeService = new CreativeService(campaignRepository, creativeRepository);
+const targetingService = new TargetingService(campaignRepository, targetingRepository);
 
 const campaignController = new CampaignController(campaignService);
 const creativeController = new CreativeController(creativeService);
+const targetingController = new TargetingController(targetingService);
+
+const targetingRouter = createTargetingRouter(targetingController);
 
 const authRepository = new PostgresAuthRepository(pool);
 const passwordHasher = new Argon2PasswordHasher();
@@ -54,7 +64,7 @@ app.get("/health", (_req, res) => {
 app.use(
 	"/api/campaigns",
 	requireAuth,
-	createCampaignRouter(campaignController, creativeController)
+	createCampaignRouter(campaignController, creativeController, targetingController)
 );
 
 app.use(

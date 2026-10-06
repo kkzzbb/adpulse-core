@@ -6,9 +6,14 @@ import { createCampaignSchema,  updateCampaignStatusSchema,
  } from "../validation/campaign.schemas.js";
 import { CreativeController } from "../controllers/creative.controller.js";
 import { createCreativeRouter } from "./creative.routes.js";
+import { TargetingController } from "../controllers/targeting.controller.js";
+import { createTargetingRouter } from "./targeting.routes.js";
 
 export function createCampaignRouter(
-	campaignController: CampaignController, creativeController: CreativeController) {
+	campaignController: CampaignController, 
+	creativeController: CreativeController,
+	targetingController: TargetingController
+) {
 	const router = Router();
 
 	router.get("/", campaignController.getCampaigns);
@@ -30,6 +35,8 @@ export function createCampaignRouter(
 
 	router.use("/:campaignId/creatives", createCreativeRouter(creativeController));
 	
+	router.use("/:campaignId/targeting", createTargetingRouter(targetingController));
+
 	router.post("/with-initial-creative", validateBody(createCampaignWithCreativeSchema),
 		campaignController.createCampaignWithCreative);
 
