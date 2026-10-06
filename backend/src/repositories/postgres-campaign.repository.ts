@@ -43,8 +43,8 @@ export class PostgresCampaignRepository implements CampaignRepository {
 			`
 			SELECT id, user_id, name, budget, spent, status
 			FROM campaigns
-			WHERE id = $1 AND user_id = $2 AND archived_at IS NULL`,
-			[id, userId],
+			WHERE user_id = $1 AND id = $2 AND archived_at IS NULL`,
+			[userId, id],
 		);
 
 		const row = result.rows[0];
@@ -86,9 +86,9 @@ export class PostgresCampaignRepository implements CampaignRepository {
 			`
 			UPDATE campaigns
 			SET status = $3, updated_at = NOW()
-			WHERE id = $1 AND user_id = $2 AND archived_at IS NULL
+			WHERE user_id = $1 AND id = $2 AND archived_at IS NULL
 			RETURNING	id, user_id, name,	budget,	spent, status`,
-				[id, userId, status]
+				[userId, id, status]
 		);
 
 		const row = result.rows[0];
@@ -105,9 +105,9 @@ export class PostgresCampaignRepository implements CampaignRepository {
 			`
 			UPDATE campaigns
 			SET budget = $3, updated_at = NOW()
-			WHERE id = $1 AND user_id = $2 AND archived_at IS NULL
+			WHERE user_id = $1 AND id = $2 AND archived_at IS NULL
 			RETURNING id, user_id, name, budget, spent, status`,
-			[id, userId, budget]
+			[userId, id, budget]
 		);
 
 		const row = result.rows[0];
@@ -124,9 +124,9 @@ export class PostgresCampaignRepository implements CampaignRepository {
 			`
 			UPDATE campaigns
 			SET name = $3, updated_at = NOW()
-			WHERE id = $1 AND user_id = $2 AND archived_at IS NULL
+			WHERE user_id = $1 AND id = $2 AND archived_at IS NULL
 			RETURNING id, user_id, name, budget, spent, status`,
-			[id, userId, name]
+			[userId, id, name]
 		);
 
 		const row = result.rows[0];
@@ -143,9 +143,9 @@ export class PostgresCampaignRepository implements CampaignRepository {
 			`
 			UPDATE campaigns
 			SET archived_at = NOW(), updated_at = NOW()
-			WHERE id = $1 AND user_id = $2 AND archived_at IS NULL
+			WHERE user_id = $1 AND id = $2 AND archived_at IS NULL
 			RETURNING id`,
-			[id, userId]
+			[userId, id]
 		);
 		
 		return result.rowCount === 1;
