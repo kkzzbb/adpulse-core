@@ -59,15 +59,7 @@ export class CampaignService {
 		if (campaign.status === newStatus) {
 			return campaign;
 		}
-
-		if (newStatus === "ACTIVE") {
-			const hasCreative = await this.creativeRepository.existsByCampaignId(id);
-
-			if (!hasCreative) {
-				throw new AppError("Campaign must have at least one creative before activation", 409);
-			}
-		}
-
+		
 		const allowedTransitions = allowedStatusTransitions[campaign.status];
 
 		if (!allowedTransitions.includes(newStatus)) {
@@ -75,6 +67,14 @@ export class CampaignService {
 				 `Cannot transition campaign from ${campaign.status} to ${newStatus}`,
       409,
     	);
+		}
+
+		if (newStatus === "ACTIVE") {
+			const hasCreative = await this.creativeRepository.existsByCampaignId(id);
+
+			if (!hasCreative) {
+				throw new AppError("Campaign must have at least one creative before activation", 409);
+			}
 		}
 
 		const updatedCampaign = await this.campaignRepository.updateStatusForUser(userId, id, newStatus);
