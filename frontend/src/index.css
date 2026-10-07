@@ -671,3 +671,17 @@ form.targeting-form small {
   margin-top: -0.2rem; 
   color: #768096;      
 }
+
+.readiness-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.readiness-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.6rem;
+  border-bottom:
+    1px solid #e5e7eb;
+}

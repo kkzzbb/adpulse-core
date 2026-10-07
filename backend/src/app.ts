@@ -32,7 +32,7 @@ const targetingRepository = new PostgresTargetingRepository(pool);
 
 const transactionManager = new PostgresTransactionManager(pool);
 
-const campaignService = new CampaignService(campaignRepository, transactionManager);
+const campaignService = new CampaignService(campaignRepository, creativeRepository, transactionManager);
 const creativeService = new CreativeService(campaignRepository, creativeRepository);
 const targetingService = new TargetingService(campaignRepository, targetingRepository);
 

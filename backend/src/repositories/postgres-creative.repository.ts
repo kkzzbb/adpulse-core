@@ -37,6 +37,20 @@ export class PostgresCreativeRepository implements CreativeRepository {
 		return result.rows.map(mapCreativeRow);
 	}
 
+	async existsByCampaignId(campaignId: string): Promise<boolean> {
+		const result = await this.db.query<{exists: boolean}>(
+			`
+			SELECT EXISTS (
+				SELECT 1
+				FROM creatives
+				WHERE campaign_id = $1
+				) AS exists
+			`,
+			[campaignId]
+		);
+
+		return (result.rows[0]?.exists ?? false);
+	}
 	async save(creative: Creative): Promise<Creative> {
 		const result = await this.db.query<CreativeRow>(
 			`

@@ -10,12 +10,14 @@ import { formatCurrency } from "../utils/format";
 import { useQuery } from "@tanstack/react-query";
 import { campaignQueries } from "../query/campaignQueries";
 import { CampaignTargetingPanel } from "../components/campaigns/CampaignTargetingPanel";
+import { CampaignReadiness } from "../components/campaigns/CampaignReadiness";
 
 export function CampaignDetailPage() {
 	const {campaignId} = useParams();
 	const campaignQuery = useQuery(campaignQueries.detail(campaignId));
 	const creativesQuery = useQuery(campaignQueries.creatives(campaignId));
-
+	const hasCreative = (creativesQuery.data?.length ?? 0) > 0;
+  
 	if (!campaignId) {
 		return (
 			<div className="page-state page-state--error" role="alert">
@@ -115,16 +117,16 @@ export function CampaignDetailPage() {
 				</div>
 			</header>	
 
-			{campaign.status === "COMPLETED" && (
-				<div className="notice">
-					This campaign is completed. Campaign metadata and budget are now read-only.
-				</div>
-				)}
+					{campaign.status === "COMPLETED" && (
+						<div className="notice">
+							This campaign is completed. Campaign metadata and budget are now read-only.
+						</div>
+					)}
 
-				<div className="action-grid">
-					<EditCampaignNameForm
-						campaign={campaign}
-						disabled={campaign.status === "COMPLETED"}
+					<div className="action-grid">
+						<EditCampaignNameForm
+							campaign={campaign}
+							disabled={campaign.status === "COMPLETED"}
 					/>
 
 					<CampaignBudgetForm
@@ -134,18 +136,25 @@ export function CampaignDetailPage() {
 
 					<CampaignStatusControls
 						campaign={campaign}
+						canActivate={hasCreative}
+						activationCheckPending={creativesQuery.isPending}
 					/>
 
 					<ArchiveCampaignButton
 						campaign={campaign}
 					/>
 				</div>
+				
+				<CampaignReadiness
+					hasCreative={hasCreative}
+					creativesLoading={creativesQuery.isPending}
+				/>
 
 				<CampaignTargetingPanel
-          campaignId={campaign.id}
-          campaignStatus={campaign.status}
-        />
-				
+					campaignId={campaign.id}
+					campaignStatus={campaign.status}
+				/>
+
 				<section className="panel">
 					<div className="section-heading">
 						<h2>Creatives</h2>
@@ -181,9 +190,9 @@ export function CampaignDetailPage() {
 									creative={creative}/>
 							)
 						)}
-						</div>
+					</div>
 				)}
 			</section>
 		</div>	
-	);
+);
 }

@@ -4,6 +4,7 @@ import type {Campaign, CreateCampaignInput, CampaignStatus,
  } from "../domain/campaign.js";
 import { AppError } from "../errors/app-error.js";
 import type { CampaignRepository } from "../repositories/campaign.repository.js";
+import type { CreativeRepository } from "../repositories/creative.repository.js";
 import type { TransactionManager } from "../transactions/transaction-manager.js";
 import { Creative } from "../domain/creative.js";
 
@@ -17,6 +18,7 @@ const allowedStatusTransitions: Record<CampaignStatus, CampaignStatus[]> = {
 export class CampaignService {
 	constructor(
 		private readonly campaignRepository: CampaignRepository,
+		private readonly creativeRepository: CreativeRepository,
 		private readonly transactionManager: TransactionManager
 	) {}
 
@@ -56,6 +58,14 @@ export class CampaignService {
 
 		if (campaign.status === newStatus) {
 			return campaign;
+		}
+
+		if (newStatus === "ACTIVE") {
+			const hasCreative = await this.creativeRepository.existsByCampaignId(id);
+
+			if (!hasCreative) {
+				throw new AppError("Campaign must have at least one creative before activation", 409);
+			}
 		}
 
 		const allowedTransitions = allowedStatusTransitions[campaign.status];

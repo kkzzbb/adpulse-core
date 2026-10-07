@@ -5,6 +5,8 @@ import { updateCampaignCache } from "../../query/updateCampaignCache";
 
 interface CampaignStatusControlsProps {
 	campaign: Campaign;
+	canActivate: boolean;
+  activationCheckPending: boolean;
 }
 
 const allowedTransitions:
@@ -23,15 +25,21 @@ const statusLabels:
 		COMPLETED: "Completed"
 };
 
-export function CampaignStatusControls({campaign}: CampaignStatusControlsProps) {
+export function CampaignStatusControls({
+	campaign,
+	canActivate,
+	activationCheckPending
+}: CampaignStatusControlsProps) {
 	const queryClient = useQueryClient();
 	const updateStatusMutation = useMutation({
-		mutationFn: (status: CampaignStatus) =>updateCampaignStatus(campaign.id, status),
+		mutationFn: (status: CampaignStatus) => updateCampaignStatus(campaign.id, status),
     onSuccess: (updatedCampaign) => {
 			updateCampaignCache(queryClient, updatedCampaign);
     }
   });
+
 	const nextStatuses = allowedTransitions[campaign.status];
+	const canTransitionToActive = nextStatuses.includes("ACTIVE");
 
 	function handleStatusChange(status: CampaignStatus) {
 		updateStatusMutation.mutate(status);
@@ -39,38 +47,66 @@ export function CampaignStatusControls({campaign}: CampaignStatusControlsProps) 
 
 	return (
 		<section>
-			<h2>
-				Campaign Status
-			</h2>
+			<h2>Campaign Status</h2>
 
 			<p>
 				Current status:{" "}
-				<strong>
-					{statusLabels[campaign.status]}
-				</strong>
+				<strong>{statusLabels[campaign.status]}</strong>
 			</p>
 
 			{nextStatuses.length === 0 ? (
 				<p>
 					This campaign is completed and has no further lifecycle transitions.
 				</p> ) : (
-					nextStatuses.map((status) => (
-						<button
-							className="button button--secondary"
-							key={status}
-							type="button"
-							disabled={updateStatusMutation.isPending}
-							onClick={() => handleStatusChange(status)}
-						>
-							{updateStatusMutation.isPending &&
-							updateStatusMutation.variables === status 
-							? "Updating..." : `Move to ${statusLabels[status]}`}
-						</button>
-					))
-				)}
+					 nextStatuses.map(
+          (status) => {
+            const isActivating = status === "ACTIVE";
+            const isDisabled = updateStatusMutation.isPending ||
+              (isActivating && (activationCheckPending || !canActivate));
 
-			{updateStatusMutation.isError && (<p className="form-error" role="alert">
-          {updateStatusMutation.error.message}</p>)}
-		</section>
-	);
+            return (
+              <button
+                className="button button--secondary"
+                key={status}
+                type="button"
+                disabled={isDisabled}
+                onClick={() => handleStatusChange(status)}
+              >
+                {updateStatusMutation.isPending && 
+									updateStatusMutation.variables ===
+                      status ? "Updating..." : `Move to ${statusLabels[status]}`}
+              </button>
+            );
+          },
+        )
+      )}
+
+      {canTransitionToActive && activationCheckPending && (
+        <p
+          className="form-hint"
+          style={{marginTop: "0.5rem"}}
+        >
+          Checking activation readiness...
+        </p>
+      )}
+
+      {canTransitionToActive && !activationCheckPending && !canActivate && (
+        <p
+          className="form-error"
+          style={{marginTop: "0.5rem"}}
+        >
+          Add at least one creative before activating.
+        </p>
+      )}
+
+      {updateStatusMutation.isError && (
+        <p
+          className="form-error"
+          role="alert"
+        >
+          {updateStatusMutation.error.message}
+        </p>
+      )}
+    </section>
+  );
 }
