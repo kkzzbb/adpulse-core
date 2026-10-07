@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "DOTENV_CONFIG_PATH=.env.test vitest run src/integration",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:baseline": "tsx src/db/migrate.ts --baseline"
   },
@@ -23,6 +24,8 @@
     "@types/express-session": "^1.19.0",
     "@types/node": "^26.6.2",
     "@types/pg": "^8.23.1",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.3.1",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"
