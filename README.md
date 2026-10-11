@@ -43,6 +43,8 @@ The project focuses on production-style application design rather than simple CR
 - Auth-aware cache isolation
 - Unit, integration, component, and E2E testing
 
+https://github.com/user-attachments/assets/228f653f-59a3-4389-a0c4-6488138c9b5a
+
 ## Architecture
 
 The backend uses a layered architecture:

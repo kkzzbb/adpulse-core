@@ -19,7 +19,40 @@ users
         │
         └── campaign_targeting
 ```
+erDiagram
+    users {
+        uuid id PK
+    }
+    
+    campaigns {
+        uuid id PK
+        uuid user_id FK
+        varchar name
+        integer budget
+        integer spent
+        varchar status
+        timestamp archived_at
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    creatives {
+        uuid id PK
+        uuid campaign_id FK
+        timestamp created_at
+    }
+    
+    campaign_targeting {
+        uuid campaign_id PK, FK
+        varchar_array countries
+        varchar_array devices
+        integer age_min
+        integer age_max
+    }
 
+    users ||--o{ campaigns : "owns"
+    campaigns ||--o{ creatives : "contains"
+    campaigns ||--o| campaign_targeting : "has 0 or 1"
 Authentication data is associated with users separately.
 
 ---
