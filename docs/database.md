@@ -19,40 +19,67 @@ users
         │
         └── campaign_targeting
 ```
+
+```mermaid
 erDiagram
+    users ||--o{ campaigns : "owns"
+    users ||--o| user_credentials : "has credentials"
+    campaigns ||--o{ creatives : "contains"
+    campaigns ||--o| campaign_targeting : "has targeting"
+
     users {
         uuid id PK
+        text email UK
+        text display_name
+        timestamptz created_at
+        timestamptz updated_at
     }
-    
+
+    user_credentials {
+        uuid user_id PK, FK
+        text password_hash
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    user_sessions {
+        varchar sid PK
+        json sess
+        timestamp expire
+    }
+
     campaigns {
         uuid id PK
         uuid user_id FK
-        varchar name
-        integer budget
-        integer spent
-        varchar status
-        timestamp archived_at
-        timestamp created_at
-        timestamp updated_at
+        text name
+        numeric budget
+        numeric spent
+        text status
+        timestamptz archived_at
+        timestamptz created_at
+        timestamptz updated_at
     }
-    
+
     creatives {
         uuid id PK
         uuid campaign_id FK
-        timestamp created_at
-    }
-    
-    campaign_targeting {
-        uuid campaign_id PK, FK
-        varchar_array countries
-        varchar_array devices
-        integer age_min
-        integer age_max
+        text headline
+        text body
+        text destination_url
+        timestamptz created_at
+        timestamptz updated_at
     }
 
-    users ||--o{ campaigns : "owns"
-    campaigns ||--o{ creatives : "contains"
-    campaigns ||--o| campaign_targeting : "has 0 or 1"
+    campaign_targeting {
+        uuid campaign_id PK, FK
+        text_array countries
+        text_array devices
+        smallint age_min
+        smallint age_max
+        timestamptz created_at
+        timestamptz updated_at
+    }
+```
 Authentication data is associated with users separately.
 
 ---
