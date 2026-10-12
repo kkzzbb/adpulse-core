@@ -4,28 +4,20 @@ AdPulse Core is a full-stack advertising campaign management platform built with
 
 The project focuses on production-style application design rather than simple CRUD. It includes authentication, authorization, campaign lifecycle rules, creatives, targeting, transactions, database migrations, frontend server-state management, and layered automated testing.
 
+https://github.com/user-attachments/assets/27918aef-724a-47e0-a2de-59ef44a9b28c
+
 ## Tech Stack
 
-**Frontend**
-- React
-- TypeScript
-- Vite
-- TanStack Query
-- React Router
-- Vitest
-- React Testing Library
-- Playwright
-
-**Backend**
-- Node.js
-- TypeScript
-- Express
-- Zod
-- PostgreSQL
-- Argon2
-- Express sessions
-- Vitest
-- Supertest
+| Frontend | Backend |
+| :--- | :--- |
+| React | Node.js |
+| TypeScript | TypeScript |
+| Vite | Express |
+| TanStack Query | Zod |
+| React Router | PostgreSQL |
+| Vitest | Argon2 |
+| React Testing Library | Express sessions |
+| Playwright | Vitest & Supertest |
 
 ## Core Features
 
@@ -42,8 +34,6 @@ The project focuses on production-style application design rather than simple CR
 - Frontend query caching
 - Auth-aware cache isolation
 - Unit, integration, component, and E2E testing
-
-https://github.com/user-attachments/assets/228f653f-59a3-4389-a0c4-6488138c9b5a
 
 ## Architecture
 

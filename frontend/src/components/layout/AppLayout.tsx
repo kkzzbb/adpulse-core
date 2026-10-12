@@ -11,29 +11,30 @@ export function AppLayout() {
 		<div className="app-shell">
 			<header className="app-header">
 				<div className="app-header__inner">
-					<NavLink className="brand" to="/">
-						AdPulse
-					</NavLink>
+					<div className="app-header__brand">
+            <NavLink className="brand" to="/">
+              AdPulse
+            </NavLink>
+            <span className="brand-subtitle">
+              Campaign management
+            </span>
+          </div>
 				
-					<span className="brand-subtitle">
-						Campaign management
-					</span>
-				</div>
+					<div className="app-header__account">
+						{user && (
+							<div>
+								<strong>
+									{user.displayName}
+								</strong>
 
-				<div className="app-header__account">
-					{user && (
-						<div>
-							<strong>
-								{user.displayName}
-							</strong>
+								<span>
+									{user.email}
+								</span>
+							</div>
+						)}
 
-							<span>
-								{user.email}
-							</span>
-						</div>
-					)}
-
-					<LogoutButton />
+						<LogoutButton />
+					</div>
 				</div>
 			</header>
 			

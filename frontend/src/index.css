@@ -103,6 +103,7 @@ h3 {
 
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
 }
 
@@ -546,6 +547,7 @@ button {
   display: flex;
   align-items: center;
   gap: 1rem;
+  margin-left: uato;
 }
 
 .app-header__account div {
@@ -684,4 +686,10 @@ form.targeting-form small {
   padding-block: 0.6rem;
   border-bottom:
     1px solid #e5e7eb;
+}
+
+.app-header__brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }

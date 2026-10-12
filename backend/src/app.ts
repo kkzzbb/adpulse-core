@@ -20,7 +20,6 @@ import { requireAuth } from "./auth/requireAuth.js";
 import { PostgresTargetingRepository } from "./repositories/postgres-targeting.repository.js";
 import { TargetingService } from "./services/targeting.service.js";
 import { TargetingController } from "./controllers/targeting.controller.js";
-import { createTargetingRouter } from "./routes/targeting.routes.js";
 
 export const app = express();
 
@@ -39,8 +38,6 @@ const targetingService = new TargetingService(campaignRepository, targetingRepos
 const campaignController = new CampaignController(campaignService);
 const creativeController = new CreativeController(creativeService);
 const targetingController = new TargetingController(targetingService);
-
-const targetingRouter = createTargetingRouter(targetingController);
 
 const authRepository = new PostgresAuthRepository(pool);
 const passwordHasher = new Argon2PasswordHasher();
