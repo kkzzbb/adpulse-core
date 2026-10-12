@@ -1,14 +1,9 @@
 import { expect, test } from "@playwright/test";
-test.use({ 
-  video: 'on',
-  launchOptions: { slowMo: 1000 } 
-});
+
 test("user can configure and activate a campaign",
   async ({page}) => {
-    test.setTimeout(120000);
-    const uniqueId = Date.now();
-    const email = `e2e-${uniqueId}@example.com`;
-    const campaignName = `E2E Campaign ${uniqueId}`;
+    const email = `e2e-test@example.com`;
+    const campaignName = `E2E 2026 Campaign`;
 
     // 1. Registration
     await page.goto("/register");

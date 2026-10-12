@@ -4,7 +4,7 @@ AdPulse Core is a full-stack advertising campaign management platform built with
 
 The project focuses on production-style application design rather than simple CRUD. It includes authentication, authorization, campaign lifecycle rules, creatives, targeting, transactions, database migrations, frontend server-state management, and layered automated testing.
 
-https://github.com/user-attachments/assets/27918aef-724a-47e0-a2de-59ef44a9b28c
+https://github.com/user-attachments/assets/4705bf1e-2408-40c4-9fd3-f4e1b2893064
 
 ## Tech Stack
 
