@@ -2,7 +2,7 @@
 
 AdPulse Core is a full-stack advertising campaign management platform built with React, TypeScript, Express, and PostgreSQL.
 
-The project focuses on production-style application design rather than simple CRUD. It includes authentication, authorization, campaign lifecycle rules, creatives, targeting, transactions, database migrations, frontend server-state management, and layered automated testing.
+The project focuses on production-style application design rather than simple CRUD. It includes authentication, authorization, campaign lifecycle rules, creatives, targeting, transactions, database migrations, frontend server-state management, containerization, and layered automated testing.
 
 https://github.com/user-attachments/assets/4705bf1e-2408-40c4-9fd3-f4e1b2893064
 
@@ -19,6 +19,13 @@ https://github.com/user-attachments/assets/4705bf1e-2408-40c4-9fd3-f4e1b2893064
 | React Testing Library | Express sessions |
 | Playwright | Vitest & Supertest |
 
+Additional tooling:
+
+- Docker
+- Docker Compose
+- Nginx
+- PostgreSQL migrations
+
 ## Core Features
 
 - Email/password authentication
@@ -34,6 +41,8 @@ https://github.com/user-attachments/assets/4705bf1e-2408-40c4-9fd3-f4e1b2893064
 - Frontend query caching
 - Auth-aware cache isolation
 - Unit, integration, component, and E2E testing
+- Multi-container Docker setup
+- Automated migration startup flow
 
 ## Architecture
 
@@ -127,7 +136,7 @@ Requirements:
 - npm
 - Docker
 
-Backend:
+### Backend
 
 ```bash
 cd backend
@@ -135,7 +144,7 @@ npm install
 npm run dev
 ```
 
-Frontend:
+### Frontend
 
 ```bash
 cd frontend
@@ -145,18 +154,212 @@ npm run dev
 
 Environment files are excluded from Git.
 
-## Quality Checks
+## Run with Docker
 
-Backend:
+AdPulse Core can be run as a complete containerized stack with Docker Compose.
+
+The Docker setup includes:
+
+```text
+Browser
+   ↓
+localhost:8080
+   ↓
+Nginx + React
+   ↓
+Express API
+   ↓
+PostgreSQL
+```
+
+The services are:
+
+- `frontend` — builds the React application and serves it with Nginx
+- `backend` — runs the compiled Express API
+- `db` — PostgreSQL
+- `migrate` — runs database migrations before the backend starts
+
+### Requirements
+
+- Docker
+- Docker Compose
+
+### 1. Create the Docker environment file
+
+Copy the example:
 
 ```bash
+cp .env.docker.example .env.docker
+```
+
+Then configure:
+
+```env
+POSTGRES_PASSWORD=replace-with-a-local-password
+SESSION_SECRET=replace-with-a-long-random-secret
+```
+
+`.env.docker` is excluded from Git.
+
+### 2. Build and start the application
+
+From the repository root:
+
+```bash
+docker compose --env-file .env.docker up --build -d
+```
+
+Docker Compose starts the services in dependency order:
+
+```text
+PostgreSQL healthy
+        ↓
+migrations complete
+        ↓
+backend starts
+        ↓
+backend healthy
+        ↓
+frontend starts
+```
+
+### 3. Check container status
+
+```bash
+docker compose --env-file .env.docker ps -a
+```
+
+A successful startup should show approximately:
+
+```text
+db         healthy
+migrate    exited (0)
+backend    healthy
+frontend   running
+```
+
+The migration container is expected to exit with code `0` because it is a one-time setup job rather than a long-running service.
+
+### 4. Open the application
+
+Visit:
+
+```text
+http://localhost:8080
+```
+
+The frontend container serves the React application through Nginx.
+
+Requests to:
+
+```text
+/api/*
+```
+
+are proxied internally to the backend container.
+
+The backend and PostgreSQL ports do not need to be exposed publicly because Docker Compose provides an internal network between services.
+
+### 5. Verify the backend health endpoint
+
+```bash
+curl http://localhost:8080/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+### 6. View logs
+
+All services:
+
+```bash
+docker compose --env-file .env.docker logs
+```
+
+Backend only:
+
+```bash
+docker compose --env-file .env.docker logs backend
+```
+
+Migration job:
+
+```bash
+docker compose --env-file .env.docker logs migrate
+```
+
+PostgreSQL:
+
+```bash
+docker compose --env-file .env.docker logs db
+```
+
+### 7. Stop the application
+
+```bash
+docker compose --env-file .env.docker down
+```
+
+PostgreSQL data is preserved in a named Docker volume.
+
+### Reset the Docker database
+
+To stop the stack and also remove the PostgreSQL volume:
+
+```bash
+docker compose --env-file .env.docker down -v
+```
+
+The next startup creates a fresh database and reapplies all migrations.
+
+> `down -v` permanently deletes the PostgreSQL data stored by this Docker Compose project.
+
+## Docker Architecture Notes
+
+A few important design decisions:
+
+- the frontend is served by Nginx rather than the Vite dev server
+- Nginx proxies `/api/*` requests to the backend container
+- the backend connects to PostgreSQL using the Compose service name `db`
+- PostgreSQL data is stored in a named Docker volume
+- Docker healthchecks ensure services are actually ready before dependents start
+- migrations run as a one-shot service before the API starts
+- backend and database ports remain internal to the Compose network
+
+One important lesson from containerizing the project was that a healthy PostgreSQL container does not necessarily mean the application is ready.
+
+PostgreSQL may be accepting connections while the application schema has not yet been created.
+
+The startup flow therefore explicitly models:
+
+```text
+database readiness
+→ schema migration readiness
+→ API readiness
+```
+
+rather than treating them as the same thing.
+
+## Quality Checks
+
+### Backend
+
+```bash
+cd backend
 npm run typecheck
 npm test
 ```
 
-Frontend:
+### Frontend
 
 ```bash
+cd frontend
 npm run build
 npm test
 npm run test:e2e
@@ -170,12 +373,19 @@ AdPulse Core demonstrates:
 - dependency injection
 - runtime validation
 - relational database design
-- transactions
+- PostgreSQL transactions
 - migration safety
 - authentication and authorization
 - secure ownership boundaries
 - frontend server-state management
 - cache invalidation
 - layered testing
+- Docker multi-stage builds
+- Docker Compose service orchestration
+- Nginx reverse proxying
+- container networking
+- persistent Docker volumes
+- service healthchecks
+- migration-aware startup ordering
 
-A separate project extends this foundation with Kafka, asynchronous analytics processing, containerization, orchestration, and observability.
+A separate project extends this foundation with Kafka, asynchronous analytics processing, distributed-system reliability patterns, Kubernetes, CI/CD, and observability.

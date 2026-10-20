@@ -1,0 +1,91 @@
+services:
+  db:
+    image: postgres:16-alpine
+
+    environment:
+      POSTGRES_USER: adpulse
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: adpulse
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U adpulse -d adpulse"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+  migrate:
+    build:
+      context: ./backend
+
+    environment:
+      NODE_ENV: development
+
+      DATABASE_URL: >-
+        postgresql://adpulse:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/adpulse
+
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET is required}
+
+    command:
+      [
+        "npm",
+        "run",
+        "migrate:prod"
+      ]
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+
+  backend:
+    build:
+      context: ./backend
+
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+
+      DATABASE_URL: >-
+        postgresql://adpulse:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/adpulse
+
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET is required}
+
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3000/health').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+  frontend:
+    build:
+      context: ./frontend
+
+    ports:
+      - "8080:80"
+
+    depends_on:
+      backend:
+        condition: service_healthy
+
+
+volumes:
+  postgres_data:
